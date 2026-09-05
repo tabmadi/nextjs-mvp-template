@@ -1,0 +1,25 @@
+# Plaintext-secret scanning (ADR-0100). The rule is that plaintext secret values do
+# not appear in any committed file; this is what checks it.
+#
+# The default rule set is extended rather than replaced: gitleaks ships provider
+# patterns for the credential formats that actually leak, and hand-maintaining that
+# list is the work the tool exists to avoid.
+
+title = "mvp secret scan"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = """
+Untracked build output and dependency trees. Every entry is a path git already
+ignores, so a finding there cannot be a committed secret — an allowlist entry for
+anything else would be suppressing the defect this scans for.
+"""
+
+paths = [
+  '''^\.next/''',
+  '''^node_modules/''',
+  '''.*/node_modules/''',
+  '''^bun\.lock$''',
+]

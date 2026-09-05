@@ -1,0 +1,70 @@
+# Task runner and tool pins for the modular-monolith profile.
+# Every tool the repo needs is pinned here; nothing resolves from $PATH.
+
+[tools]
+bun = "1.3.14"
+biome = "2.5.0"
+dbmate = "2.33.0"
+lefthook = "2.1.9"
+cocogitto = "7.0.0"
+rumdl = "0.2.18"
+gitleaks = "8.30.1"
+
+[env]
+_.file = ".env"
+
+[tasks.setup]
+description = "Install dependencies and git hooks"
+run = ["bun install", "lefthook install"]
+
+[tasks.dev]
+description = "Run the app against the local database"
+run = "bun run next dev"
+
+[tasks.build]
+description = "Production build"
+run = "bun run next build"
+
+[tasks.start]
+description = "Serve the production build"
+run = "bun run next start"
+
+[tasks."db:migrate"]
+description = "Apply pending migrations"
+run = "dbmate up"
+
+[tasks."db:new"]
+description = "Create a migration — mise run db:new <name>"
+run = "dbmate new"
+
+[tasks.test]
+description = "Run the test suite"
+run = "bun test"
+
+[tasks."lint:ts"]
+description = "Biome plus the TypeScript compiler"
+run = ["bun run next typegen", "biome check .", "bun run tsc --noEmit"]
+
+[tasks."lint:md"]
+description = "Markdown style"
+run = "rumdl check ."
+
+[tasks."lint:secrets"]
+description = "Scan the working tree for committed secrets"
+run = "gitleaks dir . --no-banner"
+
+[tasks.lint]
+description = "Every linter"
+depends = ["lint:ts", "lint:md", "lint:secrets"]
+
+[tasks.format]
+description = "Apply every formatter"
+run = "biome check . --write"
+
+[tasks.check]
+description = "The gate — run before finishing any change"
+depends = ["lint", "test", "build"]
+
+[tasks.pre-commit]
+description = "What the git hook runs"
+depends = ["lint:ts", "test"]

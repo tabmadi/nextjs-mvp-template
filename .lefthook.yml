@@ -1,0 +1,25 @@
+# Git hooks. Installed via `mise run setup`.
+
+commit-msg:
+  commands:
+    cog:
+      run: cog verify --ignore-merge-commits --file {1}
+
+pre-commit:
+  # Mirrors `mise run pre-commit`, glob-gated so each check only runs when a file
+  # it cares about is staged. Keep this in step with the lint umbrella in
+  # .mise.toml — a check that lives only in CI is a gate a commit can slip past.
+  piped: true
+  commands:
+    biome:
+      glob: "*.{ts,tsx,js,jsx,json,jsonc,css}"
+      run: biome check --write --no-errors-on-unmatched {staged_files}
+      stage_fixed: true
+    types:
+      glob: "*.{ts,tsx}"
+      run: bun run tsc --noEmit
+    markdown:
+      glob: "*.md"
+      run: rumdl check {staged_files}
+    secrets:
+      run: gitleaks protect --staged --no-banner
