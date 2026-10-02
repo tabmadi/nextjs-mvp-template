@@ -26,7 +26,7 @@ export default function Home() {
           >
             <code className="font-mono text-sm text-zinc-900 dark:text-zinc-100">{layer.path}</code>
             <span className="text-sm text-zinc-600 dark:text-zinc-400">
-              {layer.holds} — {layer.role}
+              {layer.holds}: {layer.role}
             </span>
           </div>
         ))}
@@ -34,7 +34,7 @@ export default function Home() {
 
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
         The decisions behind this layout are in <code className="font-mono">docs/adr</code>. Run{" "}
-        <code className="font-mono">mise run check</code> before finishing a change.
+        <code className="font-mono">mise run check</code> before you finish a change.
       </p>
     </main>
   );

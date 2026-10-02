@@ -1,4 +1,4 @@
-# Git hooks. Installed via `mise run setup`.
+# Git hooks, per ADR-0100. `mise run setup` installs them.
 
 commit-msg:
   commands:
@@ -6,9 +6,7 @@ commit-msg:
       run: cog verify --ignore-merge-commits --file {1}
 
 pre-commit:
-  # Mirrors `mise run pre-commit`, glob-gated so each check only runs when a file
-  # it cares about is staged. Keep this in step with the lint umbrella in
-  # .mise.toml — a check that lives only in CI is a gate a commit can slip past.
+  # Keep this in step with the `lint` task in .mise.toml. A check that only CI runs lets a commit pass locally.
   piped: true
   commands:
     biome:
