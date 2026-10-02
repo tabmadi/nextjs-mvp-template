@@ -1,39 +1,63 @@
 # Agent guide
 
-Tool-agnostic guide for any coding agent (Codex, Cursor, Claude Code, or another) working in this repo. `AGENTS.md` is the one standard: an agent either reads it or it does not — the repo carries no per-tool shim files (`CLAUDE.md`, `.cursor/rules/`, etc.). A tool that ignores `AGENTS.md` is a limitation of that tool, not something the repo works around.
+This guide is for any coding agent that works in this repo: Codex, Cursor, Claude Code, or another. `AGENTS.md` is the one standard. The repo has no per-tool files such as `CLAUDE.md` or `.cursor/rules/`. A tool that ignores `AGENTS.md` has a limitation, and the repo does not work around it.
 
-## The one rule that outranks this file
+## The one rule above this file
 
-**Humans are the first developers. ADRs and `docs/` outrank this file.** The canonical home for any decision, convention, or rationale is an [ADR](docs/adr) or a `docs/` file — human-first, tool-neutral, reviewed.
+**Humans are the first developers. ADRs and `docs/` rank above this file.** Every decision, convention, or rationale lives in an [ADR](docs/adr) or a `docs/` file. Those files are for humans first, are neutral to tools, and are reviewed.
 
-This file holds only agent-specific operational hints: how to navigate, build, and run the repo, and what to read first.
+This file holds only operational hints for agents: how to navigate, build, and run the repo, and what to read first.
+
+## Write in Simple English
+
+Every text you write in this repo follows the Simple English profile in [ADR-0001](docs/adr/0001-documentation-conventions.md#simple-english). This covers docs, ADRs, code comments, commit titles, task descriptions, error messages, and UI copy.
+
+- Use common words at CEFR B1. Technical names and technical verbs are always allowed. Keep one term for one concept.
+- Write one idea per sentence. A sentence has at most 25 words, or 20 words in `docs/guide/` and numbered steps.
+- Use only these punctuation marks in prose: period, comma, colon, and the possessive apostrophe.
+- Do not use an em dash, en dash, semicolon, parentheses, `?`, `!`, ellipsis, quote marks, `&`, or `/` for `or`. Use backticks for literal text.
+- Do not use `e.g.`, `i.e.`, `etc.`, or contractions such as `don't`.
+- Write a citation into the sentence: `..., per [ADR-0300](docs/adr/0300-data-and-domain.md).` Do not put it in parentheses.
+
+No task checks these rules. Read your text against the profile before you finish.
 
 ## Read first
 
-- [ADR-0000](docs/adr/0000-foundations.md) — the thesis, the profile this repo implements, and the ADR process. Read it before anything else.
-- [docs/adr/README.md](docs/adr/README.md) — the ADR index, one line each.
+- [ADR-0000](docs/adr/0000-foundations.md): the thesis, the profile this repo implements, and the ADR process. Read it before anything else.
+- [docs/adr/README.md](docs/adr/README.md): the ADR index, one line for each ADR.
 
-## Load these first, by task
+## What to load first, by task
 
 | Changing | Load | Then check |
 | --- | --- | --- |
 | A route, page, or component | [0400](docs/adr/0400-frontend.md) | `mise run lint:ts` |
-| Business logic | [0300](docs/adr/0300-data-and-domain.md) — the `src/server/domain` rule is the load-bearing one | `mise run test` |
+| Business logic | [0300](docs/adr/0300-data-and-domain.md). The `src/server/domain` rule is the load-bearing one | `mise run test` |
 | The schema or a migration | [0300](docs/adr/0300-data-and-domain.md) | `mise run db:migrate`, `mise run test` |
-| A document or an ADR | [0001](docs/adr/0001-documentation-conventions.md), and `_template.md` for a new ADR | `mise run lint:md` |
+| Any user-facing copy | the Simple English profile in [0001](docs/adr/0001-documentation-conventions.md#simple-english) | `mise run lint:ts` |
+| A document, an ADR, or a comment | [0001](docs/adr/0001-documentation-conventions.md) with its Simple English profile, and `_template.md` for a new ADR | `mise run lint:md` |
 
 ## How the docs are organised
 
-- **`Rules`** at the bottom of each ADR are normative and greppable. A rule that a mechanism enforces names it: `(CI: <task>)` = a linter or workflow, `(ref: <standard>)` = an adopted external standard. An unannotated rule is equally normative, and has no gate to point at. To check a convention, grep the Rules sections first; read the full ADR only when you need the rationale.
-- **House style** for prose, logging, and code comments is [ADR-0001](docs/adr/0001-documentation-conventions.md). It adopts ISO 24495-1 plain language and Google developer-docs voice, and makes only the deltas normative. Its banned-constructs table governs every doc and every comment you write: no chronology, no intensifiers, no hedges, no meta-commentary.
-- **Genre decides the path**: `docs/adr/` decisions, `docs/guide/` procedures, `docs/reference/` lookups.
-- **An ADR is law, not a plan.** It states what is true of this repo, never what someone intends to do about it. Do not add a `Follow-ups` section, a roadmap, or a remark that something is `not yet wired` — a gap between an ADR and the repo is unfinished work, not an unfinished decision.
-- **Planned work goes in a local `*.local.md` file**, which `.gitignore` excludes and nothing committed links to. Never create a committed roadmap, backlog, or status file to replace it. A `*.local.md` file and its content are private to the engineer who wrote them: never cite, quote, or reference them in a commit, a doc, a PR description, or any other output.
+- **`Rules`** at the end of each ADR are normative and greppable. A rule that a mechanism enforces names it:
+  - `(CI: <task>)` is a linter or workflow.
+  - `(ref: <standard>)` is an adopted external standard.
+
+  A rule with no annotation binds in the same way, but no gate checks it. To check a convention, grep the Rules sections first. Read the full ADR only when you need the reason for a rule.
+- **House style** for prose, UI copy, and code comments is [ADR-0001](docs/adr/0001-documentation-conventions.md). Its Simple English profile follows ASD-STE100. It also adopts ISO 24495-1 plain language and the Google developer-docs voice. Only the local deltas are normative.
+  - Its **banned-constructs table** governs every doc and comment you write: no chronology, no intensifiers, no hedges, no meta-commentary.
+  - Three or more items that share two or more attributes are a table.
+  - Its **three comment tests** decide whether a comment exists at all. The deletion test: keep a comment only if its absence would cause a wrong change, and doubt resolves to deletion. The genre test: a sentence that is still true without the file belongs in an ADR or a doc, and the comment cites it. The length test: one paragraph of at most three lines, and one line is the norm.
+  - The reader is an expert with an LLM at hand, so nothing that the code shows is written down.
+- **Genre decides the path.** `docs/adr/` holds decisions, `docs/guide/` holds procedures, and `docs/reference/` holds lookups.
+- **An ADR is law, not a plan.** It states what is true of this repo, never what someone intends to do. Do not add a `Follow-ups` section, a roadmap, or a remark such as `not yet wired`. A gap between an ADR and the repo is unfinished work, not an unfinished decision.
+- **Planned work goes in a local `*.local.md` file.** `.gitignore` excludes these files, and nothing committed links to them.
+  - Never create a committed roadmap, backlog, or status file to replace it.
+  - A `*.local.md` file and its content are private to the engineer who wrote it. Never cite, quote, or reference one in a commit, a doc, a PR description, or any other output.
 
 ## Working in the repo
 
-- The task runner is `mise` (root `.mise.toml`); commands are `mise run <task>`. `mise run setup` installs dependencies and the git hooks.
-- Tools are pinned and installed by `mise`; a shell with mise inactive resolves a bare tool call (`bun`, `biome`, `dbmate`, …) from `PATH`, at an unpinned version. `mise run <task>` activates the toolchain for that task's duration, a bare tool call does not.
-- **The domain seam is the one structural rule.** `src/server/domain/` holds pure functions: no React import, no database handle, no `Request`. Route handlers and server actions do transport and persistence, then call into it. This is what makes a later extraction into a separate service a move rather than a rewrite.
-- Next.js generates route types into `.next/types`. `tsc --noEmit` fails on a clean checkout until `next typegen` has run once; `mise run lint:ts` does this for you.
-- Before finishing a change, run `mise run check` to lint, test, and build; `mise run test` / `lint` / `format` run each individually.
+- The task runner is `mise`, configured in the root `.mise.toml`. Run a task with `mise run <task>`. `mise run setup` installs the dependencies and the git hooks.
+- `mise` pins and installs the tools. In a shell where mise is not active, a bare tool call such as `bun`, `biome`, or `dbmate` comes from `PATH`, at an unpinned version. `mise run <task>` activates the toolchain for that task only. A bare tool call does not.
+- **The domain seam is the one structural rule.** `src/server/domain/` holds pure functions: no React import, no database handle, and no `Request`. Route handlers and server actions do transport and persistence, then call into it. So a later extraction into a separate service is a move, not a rewrite.
+- Next.js generates route types into `.next/types`. `tsc --noEmit` fails on a clean checkout until `next typegen` runs once. `mise run lint:ts` runs it for you.
+- Before you finish a change, run `mise run check` to lint, test, and build. `mise run test`, `lint`, and `format` run each step alone.

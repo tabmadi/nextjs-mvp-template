@@ -5,15 +5,15 @@
 
 ## Context
 
-A template's value is that the tool choices are already made and reproducible. Two failure modes matter: a tool resolved from `$PATH` at whatever version the machine happens to carry, and a check that exists only in CI, which every local commit slips past.
+The value of a template is that its tool choices are made and reproducible. Two failures matter. The first is a tool that resolves from `$PATH`, at the version the machine has. The second is a check that only CI runs, which every local commit passes.
 
 ## Decision
 
-`mise` pins every tool and provides the only command surface. Commands are `mise run <task>`; a bare `bun` or `biome` call resolves from `$PATH` at an unpinned version.
+`mise` pins every tool and is the only command surface. A command is `mise run <task>`. A bare `bun` or `biome` call resolves from `$PATH` at an unpinned version.
 
 | Tool | Owns |
 | --- | --- |
-| bun | Install, test, script running |
+| bun | Install, test, and scripts |
 | biome | Lint and format for TypeScript, JSON, and CSS |
 | dbmate | Migrations |
 | lefthook | Git hooks |
@@ -21,21 +21,21 @@ A template's value is that the tool choices are already made and reproducible. T
 | rumdl | Markdown style |
 | gitleaks | Secret scanning |
 
-Biome replaces ESLint and Prettier. One tool, one config file, no plugin resolution graph.
+Biome replaces ESLint and Prettier: one tool, one config file, and no plugin resolution graph.
 
-`lefthook` mirrors `mise run pre-commit`, glob-gated so each check runs only when a file it cares about is staged. Commit messages follow Conventional Commits, verified by `cog` in the `commit-msg` hook.
+`lefthook` runs the checks at commit time. A glob limits each check to the staged files it reads. Commit messages follow Conventional Commits, and `cog` verifies them in the `commit-msg` hook.
 
-`mise run check` is the gate: lint, test, build.
+`mise run check` is the gate: lint, test, and build.
 
 ## Consequences
 
-Biome's rule set is narrower than ESLint's, and the Next-specific rules that `eslint-config-next` provides are covered by Biome's `next` domain rather than matched one for one.
+The rule set of Biome is narrower than the rule set of ESLint. The `next` domain of Biome covers the Next-specific rules of `eslint-config-next`, but not one for one.
 
-Next.js generates route types into `.next/types`, so `tsc --noEmit` fails on a clean checkout until `next typegen` has run. `lint:ts` runs it first.
+Next.js generates route types into `.next/types`. So `tsc --noEmit` fails on a clean checkout until `next typegen` runs. `lint:ts` runs it first.
 
 ## Rules
 
 - Every tool is pinned in `.mise.toml`. No tool is resolved from `$PATH`.
 - Every command is a `mise` task. A CI workflow step calls a task, never a tool directly.
-- Commit messages follow Conventional Commits with the type set in `cog.toml`. `(CI: lint:ts)` `(ref: Conventional Commits 1.0.0)`
+- Commit messages follow Conventional Commits with the type set in `cog.toml`. `(ref: Conventional Commits 1.0.0)`
 - `mise run check` passes before a change is finished.

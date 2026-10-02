@@ -5,42 +5,42 @@
 
 ## Context
 
-Architecture style is chosen against forces, not against product category. Two products in one category routinely need opposite structures. Three characteristics determine nearly everything:
+Forces decide an architecture style. The product category does not: two products in one category often need opposite structures. Three characteristics decide almost everything:
 
 | Axis | Question | Range | This repo |
 | --- | --- | --- | --- |
-| A — Decomposition pressure | Must parts ship, scale, or fail independently? | monolith → many services | **none** |
-| B — Operational sovereignty | Who is permitted to run it? | managed → hybrid → self-hosted | **managed** |
-| C — Correctness stakes | What does a wrong answer cost? | cosmetic → transactional → regulated | transactional |
+| A: Decomposition pressure | Must parts ship, scale, or fail independently | from monolith to many services | **none** |
+| B: Operational sovereignty | Who is permitted to run it | from managed, through hybrid, to self-hosted | **managed** |
+| C: Correctness stakes | What a wrong answer costs | from cosmetic, through transactional, to regulated | transactional |
 
-A project with no decomposition pressure and no sovereignty constraint pays nothing for a platform floor: the provider operates it. Every component this repo does not run is a component nobody has to page for.
+A project with no decomposition pressure and no sovereignty constraint pays nothing to run a platform: the provider operates it. Nobody is paged for a component that this repo does not run.
 
 ## Decision
 
-This repo implements the `modular-monolith` profile: one deployable, one database, one team, hosted by a provider.
+This repo implements the `modular-monolith` profile: one deployable, one database, and one team, hosted by a provider.
 
 Four principles follow.
 
-**The menu is omakase.** The stack is pre-decided and pinned. A generated project starts at "build features," not "pick tools." Deviating is allowed; it has to be deliberate and recorded here.
+**The menu is omakase.** The stack is decided in advance and pinned. A generated project starts at `build features`, not at `pick tools`. A deviation is allowed. It is deliberate, and an ADR records it.
 
-**Ship first, extract later.** Decomposition happens when a force applies, never in anticipation of one. A modular monolith is a correct terminal state, not a waypoint.
+**Ship first, extract later.** Decomposition happens when a force applies, never before one applies. A modular monolith is a correct final state, not a step toward microservices.
 
-**One seam, held strictly.** Business rules live in `src/server/domain/` as pure functions. That layer is the only part of this repo that survives extraction into a separate service, so it is the only boundary worth enforcing before a force demands one.
+**One seam, held strictly.** The seam is `src/server/domain/`, which holds the business rules as pure functions. Only that layer survives an extraction into a separate service. So it is the only boundary that this repo enforces before a force applies.
 
-**Enforced by machines.** A convention with no gate is a suggestion. Rules carry `(CI: <task>)` when a task enforces them.
+**Machines enforce it.** A convention with no gate is a suggestion. A Rule carries `(CI: <task>)` when a task enforces it.
 
-An ADR states what is true of this repo. It is law, not a plan: no roadmap, no follow-ups, no note that something is unfinished. A gap between an ADR and the code is unfinished work.
+An ADR states what is true of this repo. It is law, not a plan: no roadmap, no follow-ups, and no remark on unfinished work. A gap between an ADR and the code is unfinished work.
 
 ## Consequences
 
-Everything scales to the limits of one process and one database, and those limits arrive without warning. The exit is the seam, and the seam only works if `src/server/domain/` stays pure — a single React import or database handle in that directory converts a later extraction back into a rewrite.
+Everything scales to the limits of one process and one database, and those limits arrive without warning. The exit is the seam. The seam works only while `src/server/domain/` stays pure. One React import or one database handle in that directory turns a later extraction back into a rewrite.
 
-The ADR set is inherited wholesale by every project generated from this repo, so an ADR is written for the engineer maintaining the project, not for someone deciding whether to adopt it. Selection guidance belongs in the root `README.md`, which a generated project rewrites.
+Every project generated from this repo inherits the whole ADR set. So an ADR is written for the engineer who maintains the project, not for a person who decides whether to adopt it. Selection guidance belongs in the root `README.md`, which a generated project rewrites.
 
 ## Rules
 
 - Business rules live in `src/server/domain/` and import neither React, nor a database client, nor a request type.
-- A new deployable requires a decomposition force named in the root `README.md` and recorded in an ADR.
+- A new deployable requires a decomposition force that the root `README.md` names and an ADR records.
 - Every ADR carries a `Status`, a one-sentence `Decides` line, and a flat `Rules` section.
 - An ADR states what is true, never what is intended. No roadmap, follow-up, or status section.
 - Planned work lives in an untracked `*.local.md` file. No committed roadmap, backlog, or status file.
