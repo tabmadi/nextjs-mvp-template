@@ -32,7 +32,7 @@ No task checks these rules. Read your text against the profile before you finish
 | --- | --- | --- |
 | A route, page, or component | [0400](docs/adr/0400-frontend.md) | `mise run lint:ts` |
 | Business logic | [0300](docs/adr/0300-data-and-domain.md). The `src/server/domain` rule is the load-bearing one | `mise run test` |
-| The schema or a migration | [0300](docs/adr/0300-data-and-domain.md) | `mise run db:migrate`, `mise run test` |
+| The schema, a migration, a repository, or a service | [0300](docs/adr/0300-data-and-domain.md) | `mise run db:migrate`, `mise run test:db` |
 | Any user-facing copy | the Simple English profile in [0001](docs/adr/0001-documentation-conventions.md#simple-english) | `mise run lint:ts` |
 | A document, an ADR, or a comment | [0001](docs/adr/0001-documentation-conventions.md) with its Simple English profile, and `_template.md` for a new ADR | `mise run lint:md` |
 

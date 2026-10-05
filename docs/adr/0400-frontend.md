@@ -11,9 +11,9 @@ The App Router renders on the server by default, and client interactivity is the
 
 Components are server components. `"use client"` marks the smallest subtree that needs browser state. It sits as deep in the tree as the interactivity allows.
 
-A server component reads data by a call into `src/server/`. It does not fetch its own routes over HTTP.
+A server component reads data by a call to a service in `src/server/services/`. It does not fetch its own routes over HTTP.
 
-Mutations are server actions. They validate through `src/server/domain/`, then persist.
+Mutations are server actions. A server action calls a service, which validates through `src/server/domain/` and then persists.
 
 Styling is Tailwind utility classes. There is no CSS-in-JS and no second stylesheet architecture.
 
@@ -25,6 +25,6 @@ A deep `"use client"` means prop drilling where a context provider near the root
 
 - A component is a server component unless it needs browser state or an event handler.
 - `"use client"` marks the smallest subtree that requires it.
-- A server component reads data by a call into `src/server/`, never by a fetch of its own routes.
-- A mutation is a server action that validates through `src/server/domain/` before it persists.
+- A server component reads data by a call to a service in `src/server/services/`, never by a fetch of its own routes.
+- A mutation is a server action that calls a service. The service validates through `src/server/domain/` before it persists.
 - Styling is Tailwind utility classes.

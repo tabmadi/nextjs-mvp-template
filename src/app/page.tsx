@@ -1,6 +1,8 @@
 const layers = [
-  { path: "src/app/", holds: "routes, pages, server actions", role: "transport" },
-  { path: "src/server/db/", holds: "schema and queries", role: "persistence" },
+  { path: "src/app/", holds: "pages, route handlers, server actions", role: "transport" },
+  { path: "src/server/services/", holds: "one use case each", role: "orchestration" },
+  { path: "src/server/repositories/", holds: "database reads and writes", role: "persistence" },
+  { path: "src/server/db/", holds: "schema and client", role: "persistence" },
   {
     path: "src/server/domain/",
     holds: "business rules, pure",

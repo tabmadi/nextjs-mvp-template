@@ -11,13 +11,24 @@ The JavaScript ecosystem has no canonical ORM. It solves typing with types gener
 
 ## Decision
 
-`src/server/domain/` holds business rules as pure functions. A file in that directory imports neither React, nor a database client, nor a request type. `bun test` tests it with no fixtures.
+The code has four layers. Each one calls only the layers below it in the table.
 
-`src/server/db/` holds the Drizzle schema and the queries against it. Row types are inferred from the schema with `$inferSelect` and `$inferInsert`. They are never written by hand.
+| Layer | Path | Holds | Does not import |
+| --- | --- | --- | --- |
+| Transport | `src/app/`: pages, route handlers, server actions | Input parsing and the mapping of results to responses | Repositories or the database client |
+| Services | `src/server/services/` | The steps of one use case: domain checks, then repositories | Next.js request or response types |
+| Repositories | `src/server/repositories/` | Database reads and writes | Business rules |
+| Domain | `src/server/domain/` | Business rules as pure functions, with their own input types | React, a database client, a request type, or anything in `src/server/db/` |
 
-`getDb()` in `src/server/db/client.ts` opens a `pg` pool on the first database call. An import or a build opens no connection. The app server runs on Node.js, so the client uses no Bun-only module.
+`bun test` tests the domain with no fixtures. The notes example shows each layer once.
 
-Route handlers and server actions do transport and persistence, then call into the domain. They hold no business rules.
+`src/server/db/` holds the Drizzle schema and the client. Row types are inferred from the schema with `$inferSelect` and `$inferInsert`. They are never written by hand.
+
+`getDb()` in `src/server/db/client.ts` opens a `pg` pool on the first database call. An import or a build opens no connection. The app server runs on Node.js, so the client uses no Bun-only module. Services, repositories, and the client import `server-only`.
+
+`withTransaction` runs one operation on one client. Every repository in the operation receives the transaction database. It commits on success and rolls back on failure.
+
+Database tests live in `tests/integration/` and run against `TEST_DATABASE_URL`, never against `DATABASE_URL`. `mise run test:db` runs them.
 
 Money is a Postgres `numeric` column and a decimal string in TypeScript and on the wire. It is never a floating-point number. A balance is a debt to a customer, so it moves exactly to any final product, per [ADR-0000](0000-foundations.md).
 
@@ -31,10 +42,13 @@ The seam costs an indirection on every write path. That cost pays for the extrac
 
 ## Rules
 
-- A file in `src/server/domain/` imports neither React, nor a database client, nor a request type.
-- A route handler or server action holds no business rule: it calls into `src/server/domain/`.
+- A file in `src/server/domain/` imports neither React, nor a database client, nor a request type, nor anything in `src/server/db/`.
+- A route handler or server action holds no business rule. It calls a service.
+- A service holds no Next.js request or response type. A repository holds no business rule.
 - Row types are inferred from the Drizzle schema. No row interface is written by hand.
 - Money is `numeric` in Postgres and a decimal string in code and on the wire. No floating-point type holds money.
 - Database connections are lazy and use a Node.js driver. No import opens a connection.
+- All repositories in one transaction receive the same transaction database.
+- Database tests run only against `TEST_DATABASE_URL`.
 - A schema change ships with its migration in the same commit.
 - Migrations are plain SQL that `dbmate` applies, and every migration is reversible.

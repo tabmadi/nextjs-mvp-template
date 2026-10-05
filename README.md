@@ -63,13 +63,17 @@ Count the forces that apply. Zero is the common answer, and this repo is built f
 
 ## The seam
 
-`src/server/domain/` holds pure functions: no React import, no database handle, and no `Request`. Route handlers and server actions do transport and persistence, then call in.
+`src/server/domain/` holds pure functions: no React import, no database handle, and no `Request`. Route handlers and server actions parse input and call a service. The service runs the domain rules, then the repositories.
 
 ```text
-src/app/             routes, pages, server actions    transport
-src/server/db/       schema and queries               persistence
-src/server/domain/   business rules, pure             the part that outlives this repo
+src/app/                   pages, route handlers, server actions   transport
+src/server/services/       one use case each                       orchestration
+src/server/repositories/   database reads and writes               persistence
+src/server/db/             schema and client                       persistence
+src/server/domain/         business rules, pure                    the part that outlives this repo
 ```
+
+`src/app/notes/` is a working example of every layer. Delete it when the first real feature exists.
 
 This is the whole extraction plan. When a decomposition force applies, the domain layer moves to a service unchanged, and the route handlers become clients. Nothing else here ports: server actions and a Drizzle schema do not become a Go service. So the value is in the seam.
 

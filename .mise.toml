@@ -68,8 +68,20 @@ description = "Create a migration: mise run db:new <name>"
 run = "dbmate new"
 
 [tasks.test]
-description = "Run the test suite"
-run = "bun test"
+description = "Run the unit tests"
+run = "bun test src"
+
+[tasks."db:test:up"]
+description = "Start the disposable test PostgreSQL"
+run = "docker-compose --profile test up --wait postgres-test"
+
+[tasks."db:test:migrate"]
+description = "Apply the migrations to TEST_DATABASE_URL"
+run = "dbmate --env TEST_DATABASE_URL up"
+
+[tasks."test:db"]
+description = "Run the database tests against TEST_DATABASE_URL"
+run = "bun --conditions=react-server test --preload ./tests/setup.database.ts tests/integration"
 
 [tasks."lint:ts"]
 description = "Biome and the TypeScript compiler"

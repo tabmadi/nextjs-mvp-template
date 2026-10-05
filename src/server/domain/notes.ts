@@ -1,11 +1,11 @@
-import type { NewNote } from "../db/schema";
-
 export const TITLE_MAX = 120;
 
-export type ValidationError = { field: keyof NewNote; message: string };
+export type NoteInput = { title: string; body: string };
 
-export function validateNote(input: { title: string; body: string }): ValidationError[] {
-  const errors: ValidationError[] = [];
+export type FieldError = { field: keyof NoteInput; message: string };
+
+export function validateNote(input: NoteInput): FieldError[] {
+  const errors: FieldError[] = [];
   if (input.title.trim().length === 0) {
     errors.push({ field: "title", message: "Title is required." });
   }
