@@ -5,7 +5,8 @@ import { AuthError } from "next-auth";
 import { signIn } from "@/auth";
 import { parseLoginInput } from "@/server/domain/accounts";
 
-export type LoginFormState = { error: string | null };
+// `email` refills the field: React resets a form after its action, and a failed sign-in keeps what the user typed.
+export type LoginFormState = { error: string | null; email?: string };
 
 export async function loginAction(
   _previous: LoginFormState,
@@ -16,7 +17,7 @@ export async function loginAction(
     String(formData.get("password") ?? ""),
   );
   if (!input) {
-    return { error: "Enter your email and password." };
+    return { error: "Enter your email and password.", email: String(formData.get("email") ?? "") };
   }
   try {
     await signIn("credentials", { ...input, redirect: false });
@@ -24,6 +25,7 @@ export async function loginAction(
     if (error instanceof AuthError) {
       // One message for an unknown email and a wrong password, so the page does not reveal accounts.
       return {
+        email: input.email,
         error:
           error.type === "CredentialsSignin"
             ? "The email or the password is wrong."

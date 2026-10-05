@@ -37,7 +37,8 @@ A login page that the application owns takes over guarantees that the built-in p
 | No redirect leaves the app | Sign-in always goes to a fixed path. The page reads no destination from the request |
 | Login never creates a user | `verifyCredentials` only reads |
 | An outage does not look like a wrong password | An error other than wrong credentials shows a separate message |
-| The back button never traps a user in a redirect | Sign-in and sign-out redirect with `RedirectType.replace`, so `/login` and the signed-in page leave the history. `/login` does not redirect a signed-in user, so no two pages send a user to each other |
+| The back button never traps a user in a redirect | Sign-in, sign-out, and registration redirect with `RedirectType.replace`, so `/login` and the signed-in page leave the history. `/login` does not redirect a signed-in user, so no two pages send a user to each other. A redirect that depends on the session carries `Cache-Control: no-store`, so the back and forward buttons never replay a redirect from an earlier session state. Next.js sets it on a redirect from a page. A redirect from a proxy sets it explicitly |
+| A failed attempt keeps what the user typed | React resets a form after its action. The action returns the typed values, except the password, and the form refills them |
 
 Each user has a `session_version`. A token carries the version from its sign-in. On each session read, the JWT callback compares it with the stored version. An increment of the stored version ends every issued session.
 
@@ -98,7 +99,8 @@ A lost API credential cannot be recovered. The customer creates a new one.
 
 - Sign-in uses the Auth.js Credentials provider with JWT sessions. The application owns the `users` table and every sign-in, sign-out, and registration page.
 - A login page accepts requests only from the origin of the app, shows one message for an unknown email and a wrong password, applies no password policy, redirects only to a fixed path in the app, and never creates a user.
-- Sign-in and sign-out redirect with a history replace, not a push. The login page does not redirect a signed-in user.
+- Sign-in, sign-out, and registration redirect with a history replace, not a push. The login page does not redirect a signed-in user.
+- A redirect that depends on the session carries `Cache-Control: no-store`.
 - Each session read checks the session version of its token against `users.session_version`.
 - Passwords are Argon2id hashes stored as PHC strings. `(ref: RFC 9106)`
 - A password has at least 12 characters and at most 1024 UTF-8 bytes. No composition rule and no forced rotation apply. `(ref: NIST SP 800-63B)`
