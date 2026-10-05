@@ -1,23 +1,26 @@
 # Git hooks, per ADR-0100. `mise run setup` installs them.
+# Every command runs through `mise x` because a git hook has no active mise shell.
 
 commit-msg:
   commands:
     cog:
-      run: cog verify --ignore-merge-commits --file {1}
+      run: mise x -- cog verify --ignore-merge-commits --file {1}
 
 pre-commit:
-  # Keep this in step with the `lint` task in .mise.toml. A check that only CI runs lets a commit pass locally.
   piped: true
   commands:
     biome:
       glob: "*.{ts,tsx,js,jsx,json,jsonc,css}"
-      run: biome check --write --no-errors-on-unmatched {staged_files}
+      run: mise x -- biome check --write --no-errors-on-unmatched {staged_files}
       stage_fixed: true
     types:
       glob: "*.{ts,tsx}"
-      run: bun run tsc --noEmit
+      run: mise x -- bun run next typegen && mise x -- bun run tsc --noEmit
+    test:
+      glob: "*.{ts,tsx}"
+      run: mise run test
     markdown:
       glob: "*.md"
-      run: rumdl check {staged_files}
+      run: mise x -- rumdl check {staged_files}
     secrets:
-      run: gitleaks protect --staged --no-banner
+      run: mise x -- gitleaks protect --staged --no-banner

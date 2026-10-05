@@ -23,7 +23,7 @@ The value of a template is that its tool choices are made and reproducible. Two 
 
 Biome replaces ESLint and Prettier: one tool, one config file, and no plugin resolution graph.
 
-`lefthook` runs the checks at commit time. A glob limits each check to the staged files it reads. Commit messages follow Conventional Commits, and `cog` verifies them in the `commit-msg` hook.
+`lefthook` runs the checks at commit time. A glob limits each check to the staged files it reads. A hook has no active mise shell, so each hook command runs its tool through `mise x` or a `mise` task. Commit messages follow Conventional Commits, and `cog` verifies them in the `commit-msg` hook.
 
 `mise run check` is the gate: lint, test, and build.
 
@@ -39,3 +39,4 @@ Next.js generates route types into `.next/types`. So `tsc --noEmit` fails on a c
 - Every command is a `mise` task. A CI workflow step calls a task, never a tool directly.
 - Commit messages follow Conventional Commits with the type set in `cog.toml`. `(ref: Conventional Commits 1.0.0)`
 - `mise run check` passes before a change is finished.
+- A git hook runs every tool through `mise x` or a `mise` task, never from `$PATH`.

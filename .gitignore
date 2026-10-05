@@ -11,6 +11,9 @@
 # Testing
 /coverage
 
+# Drizzle Kit output. dbmate owns the migrations, per ADR-0300.
+/.drizzle/
+
 # Next.js
 /.next/
 /out/

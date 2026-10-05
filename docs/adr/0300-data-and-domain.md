@@ -15,6 +15,8 @@ The JavaScript ecosystem has no canonical ORM. It solves typing with types gener
 
 `src/server/db/` holds the Drizzle schema and the queries against it. Row types are inferred from the schema with `$inferSelect` and `$inferInsert`. They are never written by hand.
 
+`getDb()` in `src/server/db/client.ts` opens a `pg` pool on the first database call. An import or a build opens no connection. The app server runs on Node.js, so the client uses no Bun-only module.
+
 Route handlers and server actions do transport and persistence, then call into the domain. They hold no business rules.
 
 Money is a Postgres `numeric` column and a decimal string in TypeScript and on the wire. It is never a floating-point number. A balance is a debt to a customer, so it moves exactly to any final product, per [ADR-0000](0000-foundations.md).
@@ -33,5 +35,6 @@ The seam costs an indirection on every write path. That cost pays for the extrac
 - A route handler or server action holds no business rule: it calls into `src/server/domain/`.
 - Row types are inferred from the Drizzle schema. No row interface is written by hand.
 - Money is `numeric` in Postgres and a decimal string in code and on the wire. No floating-point type holds money.
+- Database connections are lazy and use a Node.js driver. No import opens a connection.
 - A schema change ships with its migration in the same commit.
 - Migrations are plain SQL that `dbmate` applies, and every migration is reversible.

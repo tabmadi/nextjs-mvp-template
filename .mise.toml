@@ -63,7 +63,3 @@ run = "biome check . --write"
 [tasks.check]
 description = "The gate: run it before you finish a change"
 depends = ["lint", "test", "build"]
-
-[tasks.pre-commit]
-description = "The checks that the git hook runs"
-depends = ["lint:ts", "test"]
