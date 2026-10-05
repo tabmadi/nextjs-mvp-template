@@ -19,13 +19,22 @@ A project with no decomposition pressure and no sovereignty constraint pays noth
 
 This repo implements the `modular-monolith` profile: one deployable, one database, and one team, hosted by a provider.
 
-Four principles follow.
+Five principles follow.
 
 **The menu is omakase.** The stack is decided in advance and pinned. A generated project starts at `build features`, not at `pick tools`. A deviation is allowed. It is deliberate, and an ADR records it.
 
 **Ship first, extract later.** Decomposition happens when a force applies, never before one applies. A modular monolith is a correct final state, not a step toward microservices.
 
 **One seam, held strictly.** The seam is `src/server/domain/`, which holds the business rules as pure functions. Only that layer survives an extraction into a separate service. So it is the only boundary that this repo enforces before a force applies.
+
+**Contracts match the sovereign profile.** A project can outgrow this profile and move to the `sovereign` profile of the [sovereign platform template](https://github.com/tabmadi/sovereign-platform-template). That move rewrites the infrastructure. It does not change what clients and stored data see. So four contracts follow the sovereign ADRs:
+
+- the identifier format, per [ADR-0003](0003-naming-and-identifiers.md)
+- the API error and wire formats, per [ADR-0303](0303-api-contracts.md)
+- the password policy, per [ADR-0304](0304-identity-and-authorization.md)
+- the tenancy model and the authorization seam, per [ADR-0304](0304-identity-and-authorization.md)
+
+The sovereign infrastructure stays out of this profile: no identity server, no authorization engine, and no cluster.
 
 **Machines enforce it.** A convention with no gate is a suggestion. A Rule carries `(CI: <task>)` when a task enforces it.
 
@@ -43,4 +52,5 @@ Every project generated from this repo inherits the whole ADR set. So an ADR is 
 - A new deployable requires a decomposition force that the root `README.md` names and an ADR records.
 - Every ADR carries a `Status`, a one-sentence `Decides` line, and a flat `Rules` section.
 - An ADR states what is true, never what is intended. No roadmap, follow-up, or status section.
+- Identifiers, API errors, the password policy, and tenancy follow the sovereign ADR with the same number: 0003, 0303, or 0304.
 - Planned work lives in an untracked `*.local.md` file. No committed roadmap, backlog, or status file.
