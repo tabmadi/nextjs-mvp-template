@@ -73,7 +73,7 @@ src/server/db/             schema and client                       persistence
 src/server/domain/         business rules, pure                    the part that outlives this repo
 ```
 
-`src/app/notes/` is a working example of every layer. Delete it when the first real feature exists.
+`src/app/notes/` is a working example of every layer, behind sign-in. Open `/register`, create an account, and sign in. The app then opens `/notes`. Delete the notes example when the first real feature exists. Keep the accounts.
 
 This is the whole extraction plan. When a decomposition force applies, the domain layer moves to a service unchanged, and the route handlers become clients. Nothing else here ports: server actions and a Drizzle schema do not become a Go service. So the value is in the seam.
 
@@ -83,7 +83,7 @@ This is the whole extraction plan. When a decomposition force applies, the domai
 
 ```bash
 mise run setup                    # dependencies and git hooks
-cp .env.example .env              # the URL of the local PostgreSQL
+cp .env.example .env              # then set AUTH_SECRET to the output of mise run auth:secret
 mise run db:up                    # local PostgreSQL in Docker
 mise run db:migrate
 mise run dev

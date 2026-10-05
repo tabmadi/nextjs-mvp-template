@@ -9,7 +9,7 @@ Each ADR ends with a flat **Rules** section and has a one-sentence **Decides** l
 | [0100](0100-toolchain.md) | The pinned toolchain, the task surface, and what runs at commit time |
 | [0200](0200-delivery.md) | The deployable artifact, the local database, the CI gate, and how migrations reach production |
 | [0300](0300-data-and-domain.md) | Where business rules live, how the schema is defined, and how migrations are applied |
-| [0304](0304-identity-and-authorization.md) | The password policy, API credentials, the tenancy model, and the authorization seam for a project with sign-in |
+| [0304](0304-identity-and-authorization.md) | Sign-in with Auth.js, the password policy, API credentials, the tenancy model, and the authorization seam |
 | [0400](0400-frontend.md) | Rendering strategy, data access from components, and the boundary at which a client component starts |
 
 A new ADR starts from [`_template.md`](_template.md).

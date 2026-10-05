@@ -43,6 +43,10 @@ description = "Serve the production build"
 env = { NODE_ENV = "production" }
 run = "node .next/standalone/server.js"
 
+[tasks."auth:secret"]
+description = "Print a new random AUTH_SECRET"
+run = "node --eval \"console.log(require('node:crypto').randomBytes(32).toString('base64url'))\""
+
 [tasks."db:up"]
 description = "Start the local PostgreSQL"
 run = "docker-compose up --wait postgres"

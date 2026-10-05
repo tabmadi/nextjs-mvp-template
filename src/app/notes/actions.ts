@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { requireActor } from "@/auth";
 import type { FieldError } from "@/server/domain/notes";
 import { createNote } from "@/server/services/notes";
 
@@ -10,7 +11,8 @@ export async function createNoteAction(
   _previous: NoteFormState,
   formData: FormData,
 ): Promise<NoteFormState> {
-  const result = await createNote({
+  const actor = await requireActor();
+  const result = await createNote(actor, {
     title: String(formData.get("title") ?? ""),
     body: String(formData.get("body") ?? ""),
   });
