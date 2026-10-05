@@ -6,19 +6,11 @@ import Credentials from "next-auth/providers/credentials";
 import type { Actor } from "@/server/domain/authorization";
 import { actorFor, currentSessionVersion, verifyCredentials } from "@/server/services/accounts";
 
-export const { handlers, auth } = NextAuth({
+export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt", maxAge: 8 * 60 * 60 },
+  pages: { signIn: "/login" },
   providers: [
     Credentials({
-      credentials: {
-        email: { label: "Email", type: "email", required: true, autoComplete: "username" },
-        password: {
-          label: "Password",
-          type: "password",
-          required: true,
-          autoComplete: "current-password",
-        },
-      },
       authorize: (credentials) =>
         verifyCredentials(String(credentials.email ?? ""), String(credentials.password ?? "")),
     }),
@@ -44,7 +36,7 @@ export async function requireActor(): Promise<Actor> {
   const session = await auth();
   const actor = session?.user.id ? await actorFor(session.user.id) : null;
   if (!actor) {
-    redirect("/api/auth/signin");
+    redirect("/login");
   }
   return actor;
 }

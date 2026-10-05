@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, test } from "bun:test";
+import { hash } from "@node-rs/argon2";
 import { sql } from "drizzle-orm";
 import { getDb } from "@/server/db/client";
+import { users } from "@/server/db/schema";
 import { currentSessionVersion, register, verifyCredentials } from "@/server/services/accounts";
 import { registerActor, resetDatabase } from "../helpers";
 
@@ -48,6 +50,20 @@ describe("verifyCredentials", () => {
     const actor = await registerActor("alice@example.com");
     const user = await verifyCredentials(" Alice@Example.com ", "correct horse battery");
     expect(user).toEqual({ id: actor.userId, email: "alice@example.com", sessionVersion: 0 });
+  });
+
+  test("accepts a password set before the current policy", async () => {
+    const [user] = await getDb()
+      .insert(users)
+      .values({ email: "legacy@example.com", name: "Legacy", passwordHash: await hash("abc") })
+      .returning();
+    expect(await verifyCredentials("legacy@example.com", "abc")).toMatchObject({ id: user.id });
+  });
+
+  test("creates no user for an unknown email", async () => {
+    expect(await verifyCredentials("nobody@example.com", "correct horse battery")).toBeNull();
+    const count = await getDb().execute(sql`SELECT count(*)::int AS n FROM users`);
+    expect(count.rows).toEqual([{ n: 0 }]);
   });
 
   test("returns null for a wrong password or an unknown email", async () => {

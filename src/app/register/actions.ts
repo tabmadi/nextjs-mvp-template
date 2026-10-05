@@ -18,5 +18,5 @@ export async function registerAction(
   if (!result.ok) {
     return { errors: result.errors };
   }
-  redirect("/api/auth/signin?callbackUrl=/notes");
+  redirect("/login");
 }

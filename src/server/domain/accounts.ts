@@ -55,3 +55,14 @@ export function validateRegistration(input: RegistrationInput): {
   }
   return { email, errors };
 }
+
+export type LoginInput = { email: string; password: string };
+
+// Login checks presence and the hashing bound only. The password policy applies where a password is set, per ADR-0304.
+export function parseLoginInput(email: string, password: string): LoginInput | null {
+  const trimmed = email.trim();
+  if (!trimmed || !password || new TextEncoder().encode(password).length > PASSWORD_MAX_BYTES) {
+    return null;
+  }
+  return { email: trimmed, password };
+}

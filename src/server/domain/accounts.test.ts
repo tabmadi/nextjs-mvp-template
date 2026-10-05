@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { normalizeEmail, passwordError, validateRegistration } from "./accounts";
+import { normalizeEmail, parseLoginInput, passwordError, validateRegistration } from "./accounts";
 
 describe("normalizeEmail", () => {
   test("trims and lowercases", () => {
@@ -46,5 +46,20 @@ describe("validateRegistration", () => {
     const { email, errors } = validateRegistration({ name: " ", email: "x", password: "short" });
     expect(email).toBeNull();
     expect(errors.map((error) => error.field)).toEqual(["name", "email", "password"]);
+  });
+});
+
+describe("parseLoginInput", () => {
+  test("applies no password policy, so an older short password still reaches the check", () => {
+    expect(parseLoginInput(" alice@example.com ", "abc")).toEqual({
+      email: "alice@example.com",
+      password: "abc",
+    });
+  });
+
+  test("rejects an empty field and a password over the hashing bound", () => {
+    expect(parseLoginInput("", "correct horse battery")).toBeNull();
+    expect(parseLoginInput("alice@example.com", "")).toBeNull();
+    expect(parseLoginInput("alice@example.com", "é".repeat(513))).toBeNull();
   });
 });
