@@ -16,7 +16,7 @@ CI has two costs that slow a team:
 - **Waiting.** A slow run that blocks a merge makes every change wait. DORA puts the limit for automated tests at about ten minutes.
 - **Breakage from the environment.** A run fails for a reason outside the code, and someone repairs the pipeline, not the product. [Studies of CI in practice](https://arxiv.org/pdf/2102.06666) report this cost and long runs as its main problems.
 
-A git hook is a gate only on the machine where it is installed. The hooks also run only the fast checks. The database tests and the image build need Docker and minutes, so in practice only CI runs them.
+A git hook is a gate only on the machine where it is installed. A check that runs only in CI fails after the push, when the author has moved on. A change that passes locally and fails in CI costs a second round trip.
 
 ## Decision
 
@@ -50,7 +50,8 @@ CI keeps the benefit and removes both costs:
 
 | Concern | Policy | Why |
 | --- | --- | --- |
-| What it runs | `mise run check`, the database tests, and the image build | These are the checks that no hook runs |
+| What it runs | `mise run ci`: the install, the gate, the database tests, and the image build | One command, so a laptop and CI cannot drift apart |
+| Before a push | The `pre-push` hook runs `mise run ci`. `git push --no-verify` skips it | A failure shows before the push, not after it |
 | When | Every push to `master` and every pull request | Every change gets feedback |
 | Blocking | Advisory. CI is not a required status check | Nobody waits for it. A red run is information |
 | A red run | Fixed or reverted first, before other work | A build that stays red stops being read, per DORA |
@@ -73,7 +74,8 @@ The old and the new image both run against the migrated database for a short tim
 - `GET /api/health/live` returns `200` while the process serves requests.
 - A provider database URL uses `sslmode=verify-full`.
 - Production migrations run as an explicit deployment step before the new image serves traffic, never at application startup.
-- CI runs `mise run check`, the database tests, and the image build on every push to `master` and on every pull request. `(CI: check.yml; ref: DORA)`
+- CI runs `mise run ci` on every push to `master` and on every pull request. The workflow has no other step. `(CI: check.yml; ref: DORA)`
+- The `pre-push` hook runs `mise run ci`.
 - CI is advisory: it is not a required status check. A red run on `master` is fixed or reverted before other work. `(ref: DORA)`
 - A CI run finishes in under ten minutes. A slower step is made faster or removed. `(ref: DORA)`
 - Every CI step calls a `mise` task.

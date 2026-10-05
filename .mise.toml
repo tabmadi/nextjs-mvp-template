@@ -109,3 +109,17 @@ run = "biome check . --write"
 description = "The gate: run it before you finish a change"
 # The steps run in order, because `next typegen` and `next build` both write .next/.
 run = ["mise run lint", "mise run test", "mise run build"]
+
+[tasks."check:db"]
+description = "Run the gate and the database tests against a fresh test PostgreSQL"
+run = [
+  "test -n \"$TEST_DATABASE_URL\" || { echo 'TEST_DATABASE_URL is not set. Copy .env.example to .env.' >&2; exit 1; }",
+  "mise run db:test:up",
+  "mise run db:test:migrate",
+  "mise run check",
+  "mise run test:db",
+]
+
+[tasks.ci]
+description = "Run exactly what CI runs. The pre-push hook and the CI workflow call it"
+run = ["mise run install", "mise run check:db", "mise run docker:build"]

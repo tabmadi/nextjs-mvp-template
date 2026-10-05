@@ -1,4 +1,4 @@
-# The CI gate, per ADR-0100. Every step calls a mise task.
+# The CI gate, per ADR-0200. It runs `mise run ci`, the same command as the pre-push hook.
 
 name: check
 
@@ -15,9 +15,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v2
-      - run: mise run install
-      - run: mise run check
-      - run: mise run db:test:up
-      - run: mise run db:test:migrate
-      - run: mise run test:db
-      - run: mise run docker:build
+      - run: mise run ci

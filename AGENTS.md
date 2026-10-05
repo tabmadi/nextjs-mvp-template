@@ -61,3 +61,4 @@ No task checks these rules. Read your text against the profile before you finish
 - **The domain seam is the one structural rule.** `src/server/domain/` holds pure functions: no React import, no database handle, and no `Request`. Route handlers and server actions do transport and persistence, then call into it. So a later extraction into a separate service is a move, not a rewrite.
 - Next.js generates route types into `.next/types`. `tsc --noEmit` fails on a clean checkout until `next typegen` runs once. `mise run lint:ts` runs it for you.
 - Before you finish a change, run `mise run check` to lint, test, and build. `mise run test`, `lint`, and `format` run each step alone.
+- Before you push, run `mise run ci`. It runs exactly what CI runs, and the `pre-push` hook runs it too. [docs/guide/testing.md](docs/guide/testing.md) lists the fixes for common failures.

@@ -89,7 +89,7 @@ mise run db:migrate
 mise run dev
 ```
 
-`mise run check` is the gate: lint, test, and build. Run it before you finish a change.
+`mise run check` is the gate: lint, test, and build. Run it before you finish a change. `mise run ci` runs exactly what CI runs, and the `pre-push` hook runs it, per [the testing guide](docs/guide/testing.md).
 
 ---
 

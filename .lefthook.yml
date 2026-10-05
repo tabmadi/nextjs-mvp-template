@@ -24,3 +24,9 @@ pre-commit:
       run: mise x -- rumdl check {staged_files}
     secrets:
       run: mise x -- gitleaks protect --staged --no-banner
+
+# The full CI run, so a push never reaches CI untested. `git push --no-verify` skips it.
+pre-push:
+  commands:
+    ci:
+      run: mise run ci
