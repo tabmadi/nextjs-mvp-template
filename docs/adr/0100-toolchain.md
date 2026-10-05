@@ -27,7 +27,7 @@ Biome replaces ESLint and Prettier: one tool, one config file, and no plugin res
 
 `lefthook` runs the checks at commit time. A glob limits each check to the staged files it reads. A hook has no active mise shell, so each hook command runs its tool through `mise x` or a `mise` task. Commit messages follow Conventional Commits, and `cog` verifies them in the `commit-msg` hook.
 
-`mise run check` is the gate: lint, test, and build.
+`mise run check` is the gate: lint, test, and build, in that order. `next typegen` and `next build` both write `.next/`, so the steps do not run in parallel.
 
 ## Consequences
 

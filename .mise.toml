@@ -109,4 +109,5 @@ run = "biome check . --write"
 
 [tasks.check]
 description = "The gate: run it before you finish a change"
-depends = ["lint", "test", "build"]
+# The steps run in order, because `next typegen` and `next build` both write .next/.
+run = ["mise run lint", "mise run test", "mise run build"]
