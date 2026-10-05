@@ -77,6 +77,10 @@ run = "bun test src"
 description = "Start the disposable test PostgreSQL"
 run = "docker compose --profile test up --wait postgres-test"
 
+[tasks."db:test:down"]
+description = "Stop and remove the disposable test PostgreSQL"
+run = "docker compose --profile test rm --stop --force postgres-test"
+
 [tasks."db:test:migrate"]
 description = "Apply the migrations to TEST_DATABASE_URL"
 run = "dbmate --env TEST_DATABASE_URL up"
@@ -122,4 +126,5 @@ run = [
 
 [tasks.ci]
 description = "Run exactly what CI runs. The pre-push hook and the CI workflow call it"
-run = ["mise run install", "mise run check:db", "mise run docker:build"]
+# The trap removes the test database on success, failure, and Ctrl+C. Other projects use the same port.
+run = "trap 'mise run db:test:down' EXIT; mise run install && mise run check:db && mise run docker:build"
