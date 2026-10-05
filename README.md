@@ -79,7 +79,8 @@ This is the whole extraction plan. When a decomposition force applies, the domai
 
 ```bash
 mise run setup                    # dependencies and git hooks
-cp .env.example .env              # then point DATABASE_URL at your database
+cp .env.example .env              # the URL of the local PostgreSQL
+mise run db:up                    # local PostgreSQL in Docker
 mise run db:migrate
 mise run dev
 ```

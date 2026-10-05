@@ -14,6 +14,8 @@ The value of a template is that its tool choices are made and reproducible. Two 
 | Tool | Owns |
 | --- | --- |
 | bun | Install, test, and scripts |
+| node | The Next.js runtime, in development, in the build, and in production |
+| docker-cli, docker-compose | The production image and the local PostgreSQL |
 | biome | Lint and format for TypeScript, JSON, and CSS |
 | dbmate | Migrations |
 | lefthook | Git hooks |

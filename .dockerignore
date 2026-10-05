@@ -1,0 +1,10 @@
+.git
+**/node_modules
+**/.next
+**/.env*
+**/*.pem
+**/*.key
+**/*.local.md
+**/*.tsbuildinfo
+next-env.d.ts
+coverage

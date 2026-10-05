@@ -1,0 +1,32 @@
+# Local services, per ADR-0200. The app image is the same image that production runs.
+
+services:
+  app:
+    build: .
+    init: true
+    environment:
+      DATABASE_URL: postgres://app:local-development@postgres:5432/app_development?sslmode=disable
+    ports:
+      - "127.0.0.1:${APP_PORT:-3000}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:17.11-bookworm
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: local-development
+      POSTGRES_DB: app_development
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app_development"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+volumes:
+  postgres_data:

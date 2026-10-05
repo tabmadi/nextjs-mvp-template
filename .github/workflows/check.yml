@@ -1,0 +1,18 @@
+# The CI gate, per ADR-0100. Every step calls a mise task.
+
+name: check
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - run: mise run install
+      - run: mise run check
+      - run: mise run docker:build
