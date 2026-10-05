@@ -7,7 +7,16 @@
 
 This profile is hosted by a provider, per [ADR-0000](0000-foundations.md). Providers differ in what they accept: a Git push, a build pack, or a container image. A project changes provider more often than it plans to, and the `sovereign` profile runs containers on its own cluster.
 
-A real project also needs a local database, and a gate that runs on every push. A git hook is a gate only on the machine where it is installed.
+A real project also needs a local database.
+
+An MVP trades many things for speed, and CI looks like one of them. The evidence says the opposite. The [DORA research](https://dora.dev/capabilities/continuous-integration/) finds that continuous integration gives higher deployment frequency and more stable systems together. Speed and stability are not a trade.
+
+CI has two costs that slow a team:
+
+- **Waiting.** A slow run that blocks a merge makes every change wait. DORA puts the limit for automated tests at about ten minutes.
+- **Breakage from the environment.** A run fails for a reason outside the code, and someone repairs the pipeline, not the product. [Studies of CI in practice](https://arxiv.org/pdf/2102.06666) report this cost and long runs as its main problems.
+
+A git hook is a gate only on the machine where it is installed. The hooks also run only the fast checks. The database tests and the image build need Docker and minutes, so in practice only CI runs them.
 
 ## Decision
 
@@ -35,9 +44,21 @@ TLS settings live in `DATABASE_URL`, which both `pg` and `dbmate` read. A provid
 
 A migration runs as an explicit deployment step: `mise run db:migrate` with the `DATABASE_URL` of the target. It runs before the new image serves traffic. The application never migrates at startup, because two instances that start together race on the same migration.
 
-### The CI gate
+### The CI policy
 
-`.github/workflows/check.yml` runs on every push to `master` and on every pull request. It runs `mise run check` and builds the image. Every step calls a `mise` task, per [ADR-0100](0100-toolchain.md).
+CI keeps the benefit and removes both costs:
+
+| Concern | Policy | Why |
+| --- | --- | --- |
+| What it runs | `mise run check`, the database tests, and the image build | These are the checks that no hook runs |
+| When | Every push to `master` and every pull request | Every change gets feedback |
+| Blocking | Advisory. CI is not a required status check | Nobody waits for it. A red run is information |
+| A red run | Fixed or reverted first, before other work | A build that stays red stops being read, per DORA |
+| Speed | One job, under ten minutes | The DORA limit for feedback |
+| Moving parts | Every step calls a `mise` task, per [ADR-0100](0100-toolchain.md). Docker comes from the host | The pipeline and a laptop run the same commands |
+| Deployment | No CD. A deployment is the deploy step of the provider, or a manual step | A deploy pipeline is a second system to keep working |
+
+`.github/workflows/check.yml` implements the policy.
 
 ## Consequences
 
@@ -52,4 +73,8 @@ The old and the new image both run against the migrated database for a short tim
 - `GET /api/health/live` returns `200` while the process serves requests.
 - A provider database URL uses `sslmode=verify-full`.
 - Production migrations run as an explicit deployment step before the new image serves traffic, never at application startup.
-- CI runs `mise run check` and the image build on every push to `master` and on every pull request. `(CI: check.yml)`
+- CI runs `mise run check`, the database tests, and the image build on every push to `master` and on every pull request. `(CI: check.yml; ref: DORA)`
+- CI is advisory: it is not a required status check. A red run on `master` is fixed or reverted before other work. `(ref: DORA)`
+- A CI run finishes in under ten minutes. A slower step is made faster or removed. `(ref: DORA)`
+- Every CI step calls a `mise` task.
+- No workflow deploys. A deployment uses the deploy step of the provider, or runs by hand.

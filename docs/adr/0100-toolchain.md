@@ -15,13 +15,14 @@ The value of a template is that its tool choices are made and reproducible. Two 
 | --- | --- |
 | bun | Install, test, and scripts |
 | node | The Next.js runtime, in development, in the build, and in production |
-| docker-cli, docker-compose | The production image and the local PostgreSQL |
 | biome | Lint and format for TypeScript, JSON, and CSS |
 | dbmate | Migrations |
 | lefthook | Git hooks |
 | cocogitto | Commit message shape |
 | rumdl | Markdown style |
 | gitleaks | Secret scanning |
+
+Docker is the one exception to the pins. The Docker daemon comes from the host, and the CLI and Compose come with it. So the tasks call the `docker compose` of the host, and a pinned CLI would only add a second version to keep in step with the daemon.
 
 Biome replaces ESLint and Prettier: one tool, one config file, and no plugin resolution graph.
 
@@ -37,7 +38,7 @@ Next.js generates route types into `.next/types`. So `tsc --noEmit` fails on a c
 
 ## Rules
 
-- Every tool is pinned in `.mise.toml`. No tool is resolved from `$PATH`.
+- Every tool is pinned in `.mise.toml`. No tool is resolved from `$PATH`, except Docker, which comes from the host with its daemon.
 - Every command is a `mise` task. A CI workflow step calls a task, never a tool directly.
 - Commit messages follow Conventional Commits with the type set in `cog.toml`. `(ref: Conventional Commits 1.0.0)`
 - `mise run check` passes before a change is finished.
