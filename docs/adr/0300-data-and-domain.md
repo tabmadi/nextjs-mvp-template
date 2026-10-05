@@ -17,6 +17,8 @@ The JavaScript ecosystem has no canonical ORM. It solves typing with types gener
 
 Route handlers and server actions do transport and persistence, then call into the domain. They hold no business rules.
 
+Money is a Postgres `numeric` column and a decimal string in TypeScript and on the wire. It is never a floating-point number. A balance is a debt to a customer, so it moves exactly to any final product, per [ADR-0000](0000-foundations.md).
+
 Migrations are plain SQL that `dbmate` applies, forward and back. The Drizzle schema and the migrations state the same facts twice. The migrations are the authority, because the application meets the database at runtime.
 
 ## Consequences
@@ -30,5 +32,6 @@ The seam costs an indirection on every write path. That cost pays for the extrac
 - A file in `src/server/domain/` imports neither React, nor a database client, nor a request type.
 - A route handler or server action holds no business rule: it calls into `src/server/domain/`.
 - Row types are inferred from the Drizzle schema. No row interface is written by hand.
+- Money is `numeric` in Postgres and a decimal string in code and on the wire. No floating-point type holds money.
 - A schema change ships with its migration in the same commit.
 - Migrations are plain SQL that `dbmate` applies, and every migration is reversible.
