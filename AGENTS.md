@@ -48,7 +48,7 @@ No task checks these rules. Read your text against the profile before you finish
   - Three or more items that share two or more attributes are a table.
   - Its **three comment tests** decide whether a comment exists at all. The deletion test: keep a comment only if its absence would cause a wrong change, and doubt resolves to deletion. The genre test: a sentence that is still true without the file belongs in an ADR or a doc, and the comment cites it. The length test: one paragraph of at most three lines, and one line is the norm.
   - The reader is an expert with an LLM at hand, so nothing that the code shows is written down.
-- **Genre decides the path.** `docs/adr/` holds decisions, `docs/guide/` holds procedures, and `docs/reference/` holds lookups.
+- **Genre decides the path.** `docs/adr/` holds decisions, `docs/guide/` holds procedures, `docs/reference/` holds lookups, and `docs/product/` holds the product: who it serves, what it sells, and why.
 - **An ADR is law, not a plan.** It states what is true of this repo, never what someone intends to do. Do not add a `Follow-ups` section, a roadmap, or a remark such as `not yet wired`. A gap between an ADR and the repo is unfinished work, not an unfinished decision.
 - **Planned work goes in a local `*.local.md` file.** `.gitignore` excludes these files, and nothing committed links to them.
   - Never create a committed roadmap, backlog, or status file to replace it.

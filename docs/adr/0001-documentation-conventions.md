@@ -91,6 +91,7 @@ These are not prose, and the punctuation rules do not apply to them:
 | `docs/adr/` | one decision per file |
 | `docs/guide/` | a procedure someone executes |
 | `docs/reference/` | a lookup, a registry, or live state |
+| `docs/product/` | the product: who it serves, what it sells, and why. A technical decision about the repo stays in an ADR |
 
 ### Banned constructs
 
@@ -178,7 +179,7 @@ No task checks the profile, the banned constructs, or the comment rules. A docum
 - Chronology, intensifiers, hedges, meta-commentary, questions, planned work, and implementation status appear in no document and no comment.
 - A number is stated only if doubling it would change the decision. Any other count becomes a link to its registry.
 - No committed file links to an untracked one.
-- A decision lives in `docs/adr/`, a procedure in `docs/guide/`, and a lookup in `docs/reference/`.
+- A decision lives in `docs/adr/`, a procedure in `docs/guide/`, a lookup in `docs/reference/`, and a product decision in `docs/product/`.
 - Markdown is not hard-wrapped: one line per paragraph, list item, or table row.
 - Tables are compact, never padded: one space inside each pipe and a bare `---` delimiter. `(CI: lint:md)`
 - Markdown passes `rumdl`. `(CI: lint:md)`
