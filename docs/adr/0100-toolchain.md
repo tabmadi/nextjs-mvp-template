@@ -21,12 +21,15 @@ The value of a template is that its tool choices are made and reproducible. Two 
 | cocogitto | Commit message shape |
 | rumdl | Markdown style |
 | gitleaks | Secret scanning |
+| Renovate | Updates to the pins |
 
 Docker is the one exception to the pins. The Docker daemon comes from the host, and the CLI and Compose come with it. So the tasks call the `docker compose` of the host, and a pinned CLI would only add a second version to keep in step with the daemon.
 
 Biome replaces ESLint and Prettier: one tool, one config file, and no plugin resolution graph.
 
 `lefthook` runs the fast checks at commit time, and `mise run ci` at push time, per [ADR-0200](0200-delivery.md). A glob limits each check to the staged files it reads. A hook has no active mise shell, so each hook command runs its tool through `mise x` or a `mise` task. Commit messages follow Conventional Commits, and `cog` verifies them in the `commit-msg` hook.
+
+Renovate opens a pull request when a pin in `.mise.toml`, a package, or a GitHub Action has a new version. The CI gate decides, and Renovate merges nothing.
 
 `mise run check` is the gate: lint, test, and build, in that order. `next typegen` and `next build` both write `.next/`, so the steps do not run in parallel.
 

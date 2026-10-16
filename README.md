@@ -98,3 +98,7 @@ mise run dev
 Decisions live in [`docs/adr`](docs/adr) and rank above every other file, including [`AGENTS.md`](AGENTS.md). Start at [ADR-0000](docs/adr/0000-foundations.md).
 
 [ADR-0001](docs/adr/0001-documentation-conventions.md) holds the rules for every text in the repo: Simple English, the banned constructs, and the comment rules.
+
+## License
+
+Apache License 2.0. See [LICENSE](LICENSE).

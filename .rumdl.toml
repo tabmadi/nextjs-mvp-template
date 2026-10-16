@@ -4,7 +4,7 @@
 [global]
 # Prose is not hard-wrapped, per ADR-0001, and a column limit conflicts with that.
 disable = ["MD013"]
-exclude = ["node_modules", ".next", "**/CHANGELOG.md"]
+exclude = ["node_modules", ".next", "**/CHANGELOG.md", ".github/PULL_REQUEST_TEMPLATE.md"]
 
 [MD004]
 style = "dash"
