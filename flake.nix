@@ -11,14 +11,9 @@
     };
     # A new version is a new tag here.
     tabnix = {
-      url = "github:tabmadi/tabnix/v0.3.0";
+      url = "github:tabmadi/tabnix/v0.4.0";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-parts.follows = "flake-parts";
-    };
-    # bun.nix lists every package of bun.lock, so a build installs them without network.
-    bun2nix = {
-      url = "github:nix-community/bun2nix";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
@@ -26,39 +21,25 @@
     inputs@{ flake-parts, tabnix, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       # The template scope adds its own checks and outputs. A copy has no template/ folder, so it adds nothing.
+      # The bun module of tabnix holds Bun, bun2nix, the hook for bun.nix, and the install and check helpers.
       imports = [
         tabnix.flakeModules.default
+        tabnix.flakeModules.bun
       ]
       ++ inputs.nixpkgs.lib.optional (builtins.pathExists ./template/scope.nix) ./template/scope.nix;
 
       perSystem =
-        { pkgs, inputs', ... }:
+        { pkgs, config, ... }:
         let
-          bun2nix = inputs'.bun2nix.packages.default;
+          inherit (config.tabnix.bun) install check;
           # Node.js runs the app in production, per ADR-0110.
           nodejs = pkgs.nodejs_24;
           # Biome finds its config in .config/ only through this flag, per ADR-0110.
           biomeConfig = "--config-path .config";
 
-          # The install of bun.lock. Next.js needs the hoisted layout of a plain `bun install`.
-          bunInstall = {
-            src = ./.;
-            nativeBuildInputs = [
-              bun2nix.hook
-              nodejs
-            ];
-            bunDeps = bun2nix.fetchBunDeps { bunNix = ./bun.nix; };
-            bunInstallFlags = [ "--linker=hoisted" ];
-            dontUseBunBuild = true;
-            dontUseBunCheck = true;
-            dontUseBunInstall = true;
-            dontRunLifecycleScripts = true;
-            env.NEXT_TELEMETRY_DISABLED = "1";
-          };
-
           # The standalone output of Next.js, with the static files and the migrations.
           app = pkgs.stdenv.mkDerivation (
-            bunInstall
+            install
             // {
               pname = "app";
               version = (builtins.fromJSON (builtins.readFile ./package.json)).version;
@@ -78,7 +59,7 @@
                 runHook postInstall
               '';
               # The standalone output holds prebuilt native modules, such as @node-rs/argon2.
-              nativeBuildInputs = bunInstall.nativeBuildInputs ++ [ pkgs.autoPatchelfHook ];
+              nativeBuildInputs = install.nativeBuildInputs ++ [ pkgs.autoPatchelfHook ];
               buildInputs = [ pkgs.stdenv.cc.cc.lib ];
               autoPatchelfIgnoreMissingDeps = [ "libc.musl-x86_64.so.1" ];
               dontStrip = true;
@@ -119,32 +100,21 @@
               };
             };
           };
-
-          # A check runs on the tracked files with the locked node_modules of bun.lock.
-          bunCheck =
-            name: tools: command:
-            pkgs.stdenv.mkDerivation (
-              bunInstall
-              // {
-                inherit name;
-                nativeBuildInputs = bunInstall.nativeBuildInputs ++ tools;
-                buildPhase = ''
-                  export HOME=$TMPDIR
-                  ${command}
-                '';
-                installPhase = "touch $out";
-              }
-            );
         in
         {
           tabnix.packages = [
-            pkgs.bun
             nodejs
             pkgs.biome
             pkgs.dbmate
             pkgs.typescript-language-server
-            bun2nix
           ];
+
+          # Next.js needs Node.js and the hoisted layout of a plain `bun install`.
+          tabnix.bun = {
+            tools = [ nodejs ];
+            installFlags = [ "--linker=hoisted" ];
+            env.NEXT_TELEMETRY_DISABLED = "1";
+          };
 
           # dbmate writes no schema dump. The migrations are the authority, per ADR-0300.
           tabnix.env.DBMATE_NO_DUMP_SCHEMA = "true";
@@ -156,18 +126,6 @@
             files = "\\.(ts|tsx|js|jsx|css)$";
           };
 
-          # bun.nix follows bun.lock, so a dependency change cannot miss it.
-          tabnix.hooks.bun-nix = {
-            name = "bun2nix";
-            entry = "${pkgs.writeShellScript "bun-nix-check" ''
-              ${bun2nix}/bin/bun2nix -o bun.nix
-              ${pkgs.nixfmt}/bin/nixfmt bun.nix
-              git diff --exit-code -- bun.nix
-            ''}";
-            files = "(^|/)(bun\\.lock|bun\\.nix)$";
-            pass_filenames = false;
-          };
-
           packages = {
             default = app;
             inherit image;
@@ -176,15 +134,15 @@
           checks = {
             build = app;
             inherit image;
-            lint-ts = bunCheck "lint-ts" [ pkgs.biome ] ''
+            lint-ts = check "lint-ts" [ pkgs.biome ] ''
               node node_modules/next/dist/bin/next typegen
               biome ci ${biomeConfig} .
               node node_modules/typescript/bin/tsc --noEmit
             '';
-            test = bunCheck "test" [ pkgs.bun ] "bun test src";
+            test = check "test" [ pkgs.bun ] "bun test src";
             # The database tests run against a PostgreSQL that lives only inside the check.
             test-db =
-              bunCheck "test-db"
+              check "test-db"
                 [
                   pkgs.bun
                   pkgs.dbmate
