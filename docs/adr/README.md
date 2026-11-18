@@ -17,5 +17,6 @@ Each ADR ends with a flat **Rules** section and has a one-sentence **Decides** l
 | [0300](0300-data-and-domain.md) | Where business rules live, how the schema is defined, and how migrations are applied |
 | [0304](0304-identity-and-authorization.md) | Sign-in with Better Auth, the password policy, the storage of API credentials, the tenancy model, and the authorization seam |
 | [0400](0400-frontend.md) | Rendering strategy, data access from components, and the boundary at which a client component starts |
+| [0602](0602-behaviour-requirements.md) | What the app does is a list of EARS requirements with IDs in `docs/requirements/`, a test cites each ID, and tablint checks the trace |
 
 A new ADR starts from [`_template.md`](_template.md).

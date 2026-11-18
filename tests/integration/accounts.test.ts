@@ -35,7 +35,7 @@ async function signInError(email: string, password: string): Promise<string | un
 }
 
 describe("register", () => {
-  test("creates a personal organization with the user as owner", async () => {
+  test("ACC-007 creates a personal organization with the user as owner", async () => {
     const actor = await registerActor("alice@example.com");
     expect(actor.role).toBe("owner");
     const result = await getDb().execute(
@@ -44,7 +44,7 @@ describe("register", () => {
     expect(result.rows).toEqual([{ name: "Personal workspace" }]);
   });
 
-  test("stores an Argon2id PHC hash in a credential account, never the password", async () => {
+  test("ACC-008 stores an Argon2id PHC hash in a credential account, never the password", async () => {
     const actor = await registerActor("alice@example.com");
     const result = await getDb().execute(
       sql`SELECT provider_id, account_id, password FROM accounts WHERE user_id = ${actor.userId}`,
@@ -55,7 +55,7 @@ describe("register", () => {
     expect(String(result.rows[0]?.password)).toStartWith("$argon2id$v=19$");
   });
 
-  test("rejects a duplicate email in any case", async () => {
+  test("ACC-001 ACC-009 rejects a duplicate email in any case", async () => {
     await registerActor("alice@example.com");
     const result = await register({
       name: "Alice",
@@ -68,7 +68,7 @@ describe("register", () => {
     });
   });
 
-  test("creates nothing for an invalid registration", async () => {
+  test("ACC-006 creates nothing for an invalid registration", async () => {
     const result = await register({ name: "Bob", email: "bob@example.com", password: "short" });
     expect(result.ok).toBe(false);
     const count = await getDb().execute(sql`SELECT count(*)::int AS n FROM organizations`);
@@ -77,7 +77,7 @@ describe("register", () => {
 });
 
 describe("sign-in", () => {
-  test("opens a session for the right password", async () => {
+  test("ACC-010 opens a session for the right password", async () => {
     const actor = await registerActor("alice@example.com");
     const session = await auth.api.getSession({
       headers: await signIn("Alice@Example.com", "correct horse battery"),
@@ -85,7 +85,7 @@ describe("sign-in", () => {
     expect(session?.user.id).toBe(actor.userId);
   });
 
-  test("accepts a password set before the current policy", async () => {
+  test("ACC-011 accepts a password set before the current policy", async () => {
     const [user] = await getDb()
       .insert(users)
       .values({ email: "legacy@example.com", name: "Legacy" })
@@ -97,7 +97,7 @@ describe("sign-in", () => {
     expect(session?.user.id).toBe(user.id);
   });
 
-  test("gives one error for a wrong password and an unknown email", async () => {
+  test("ACC-012 gives one error for a wrong password and an unknown email", async () => {
     await registerActor("alice@example.com");
     expect(await signInError("alice@example.com", "wrong password!!")).toBe(
       "INVALID_EMAIL_OR_PASSWORD",
@@ -107,13 +107,13 @@ describe("sign-in", () => {
     );
   });
 
-  test("creates no user for an unknown email", async () => {
+  test("ACC-013 creates no user for an unknown email", async () => {
     await signInError("nobody@example.com", "correct horse battery");
     const count = await getDb().execute(sql`SELECT count(*)::int AS n FROM users`);
     expect(count.rows).toEqual([{ n: 0 }]);
   });
 
-  test("rejects a sign-up through Better Auth, so every user comes from register", async () => {
+  test("ACC-014 rejects a sign-up through Better Auth, so every user comes from register", async () => {
     let code: string | undefined;
     try {
       await auth.api.signUpEmail({
@@ -129,7 +129,7 @@ describe("sign-in", () => {
 });
 
 describe("endSessions", () => {
-  test("ends every issued session of the user", async () => {
+  test("ACC-015 ends every issued session of the user", async () => {
     const actor = await registerActor("alice@example.com");
     const headers = await signIn("alice@example.com", "correct horse battery");
     expect((await auth.api.getSession({ headers }))?.user.id).toBe(actor.userId);

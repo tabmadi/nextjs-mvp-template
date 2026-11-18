@@ -38,6 +38,7 @@ If a `template/` folder exists, read `template/AGENTS.md` before anything else.
 | Business logic | [0300](docs/adr/0300-data-and-domain.md). The `src/server/domain` rule is the load-bearing one | `just test` |
 | The schema, a migration, a repository, or a service | [0300](docs/adr/0300-data-and-domain.md) | `just db-migrate`, `just test-db` |
 | Any user-facing copy | the Simple English profile in [0001](docs/adr/0001-documentation-conventions.md#simple-english) | `just lint-ts` |
+| What the app does | [0602](docs/adr/0602-behaviour-requirements.md), then the file of the module in `docs/requirements/` | `just lint-prose`, `just test` |
 | A document, an ADR, or a comment | [0001](docs/adr/0001-documentation-conventions.md) with its Simple English profile, and `_template.md` for a new ADR | `just lint-md` |
 
 ## How the docs are organised
@@ -52,7 +53,7 @@ If a `template/` folder exists, read `template/AGENTS.md` before anything else.
   - Three or more items that share two or more attributes are a table.
   - Its **three comment tests** decide whether a comment exists at all. The deletion test: keep a comment only if its absence would cause a wrong change, and doubt resolves to deletion. The genre test: a sentence that is still true without the file belongs in an ADR or a doc, and the comment cites it. The length test: one paragraph of at most three lines, and one line is the norm.
   - The reader is an expert with an LLM at hand, so nothing that the code shows is written down.
-- **Genre decides the path.** `docs/adr/` holds decisions, `docs/guide/` holds procedures, `docs/reference/` holds lookups, and `docs/product/` holds the product: who it serves, what it sells, and why.
+- **Genre decides the path.** `docs/adr/` holds decisions, `docs/guide/` holds procedures, `docs/reference/` holds lookups, `docs/product/` holds the product: who it serves, what it sells, and why, and `docs/requirements/` holds what the app does.
 - **An ADR is law, not a plan.** It states what is true of this repo, never what someone intends to do. Do not add a `Follow-ups` section, a roadmap, or a remark such as `not yet wired`. A gap between an ADR and the repo is unfinished work, not an unfinished decision.
 
 ## Working in the repo

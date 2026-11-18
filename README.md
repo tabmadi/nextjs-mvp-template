@@ -118,6 +118,8 @@ Decisions live in [`docs/adr`](docs/adr) and rank above every other file, includ
 
 [ADR-0001](docs/adr/0001-documentation-conventions.md) holds the rules for every text in the repo: Simple English, the banned constructs, and the comment rules.
 
+What the app does lives in [`docs/requirements`](docs/requirements/README.md), one file for each module, per [ADR-0602](docs/adr/0602-behaviour-requirements.md). A test cites each requirement by its ID.
+
 ## License
 
 Apache License 2.0. See [LICENSE](LICENSE).

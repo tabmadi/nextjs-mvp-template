@@ -107,6 +107,7 @@ Every repo uses these terms with one meaning. A repo names only the environments
 | `docs/guide/` | a procedure someone executes |
 | `docs/reference/` | a lookup, a registry, or live state |
 | `docs/product/` | the product: who it serves, what it sells, and why. A technical decision about the repo stays in an ADR |
+| `docs/requirements/` | what each module of the app does, as EARS sentences with IDs that tests cite, per [ADR-0602](0602-behaviour-requirements.md) |
 
 ### Banned constructs
 
@@ -195,6 +196,7 @@ No task checks the profile, the banned constructs, or the comment rules. A docum
 - A number is stated only if doubling it would change the decision. Any other count becomes a link to its registry.
 - No committed file links to an untracked one.
 - A decision lives in `docs/adr/`, a procedure in `docs/guide/`, a lookup in `docs/reference/`, and a product decision in `docs/product/`.
+- Behaviour lives in `docs/requirements/`, as one EARS sentence with an ID for each row, and a test cites each ID. `(CI: lint-prose)`
 - Markdown is not hard-wrapped: one line per paragraph, list item, or table row.
 - Tables are compact, never padded: one space inside each pipe and a bare `---` delimiter. `(CI: lint-md)`
 - Markdown passes `rumdl`. `(CI: lint-md)`
