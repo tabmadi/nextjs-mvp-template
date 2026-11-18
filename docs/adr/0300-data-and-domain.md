@@ -9,6 +9,51 @@ In Next.js, one function can open a database connection and render a component. 
 
 The JavaScript ecosystem has no canonical ORM. It solves typing with types generated from a schema, not with accessors built at runtime. Drizzle has that shape: the schema is TypeScript, and the row types are inferred from it.
 
+## Decision drivers
+
+1. **Types from the schema.** Row types come from one definition, never written by hand.
+2. **Plain SQL migrations.** A migration is SQL that a reader can review, apply forward and back, and run from any language.
+3. **Thin layer.** The data layer adds no engine or process beside the app.
+4. **Extractable rules.** The business rules move to a service without a rewrite.
+5. **Exact money.** A balance is exact to the smallest unit.
+
+## Considered options
+
+### The data access
+
+| Option | 1 Types from the schema | 3 Thin layer | Verdict |
+| --- | --- | --- | --- |
+| Prisma | Yes, from its own schema language | A generated client and its own engine | Rejected on driver 3 |
+| Kysely | Types written by hand or generated from the database | Yes, a query builder only | Rejected on driver 1 |
+| `pg` with raw SQL | No | Yes | Rejected on driver 1 |
+| **Drizzle** | **Yes. The schema is TypeScript, and the row types are inferred** | **Yes. SQL-like queries with no engine** | **Chosen** |
+
+Sources:
+
+- [Drizzle](https://orm.drizzle.team/docs/overview), [Prisma](https://www.prisma.io/docs/orm/overview/introduction/what-is-prisma), [Kysely](https://kysely.dev/docs/intro).
+
+### The migrations
+
+| Option | 2 Plain SQL | Verdict |
+| --- | --- | --- |
+| `drizzle-kit migrate` | SQL generated from the schema, forward only | Rejected. A down migration and a reviewed SQL file are the point |
+| Prisma Migrate | SQL tied to Prisma | Rejected on driver 2 |
+| Atlas | Declarative, with a plan from the schema | Rejected. A second schema language for this size of app |
+| **dbmate** | **Plain SQL, forward and back, one small binary** | **Chosen. The migrations stay usable from any language** |
+
+Sources:
+
+- [dbmate](https://github.com/amacneil/dbmate), [Drizzle migrations](https://orm.drizzle.team/docs/migrations), [Atlas](https://atlasgo.io/).
+
+### The structure and the money
+
+| Option | 4 Extractable rules | 5 Exact money | Verdict |
+| --- | --- | --- | --- |
+| Rules inside handlers and actions | No | Not applicable | Rejected |
+| Money as a floating-point number | Not applicable | No | Rejected |
+| Money as integer cents | Not applicable | Yes, for one currency scale | Rejected. A currency with another scale needs a second rule |
+| **Four layers with a pure domain, and money as `numeric`** | **Yes** | **Yes, for any scale** | **Chosen** |
+
 ## Decision
 
 The code has four layers. Each one calls only the layers below it in the table.

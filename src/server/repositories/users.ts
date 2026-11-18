@@ -2,7 +2,7 @@ import "server-only";
 
 import { eq } from "drizzle-orm";
 import type { Database } from "../db/client";
-import { type NewUser, type User, users } from "../db/schema";
+import { accounts, type NewUser, sessions, type User, users } from "../db/schema";
 
 export async function insertUser(db: Database, values: NewUser): Promise<User> {
   const [user] = await db.insert(users).values(values).returning();
@@ -14,11 +14,17 @@ export async function findUserByEmail(db: Database, email: string): Promise<User
   return user;
 }
 
-export async function findSessionVersion(db: Database, userId: string): Promise<number | null> {
-  const [row] = await db
-    .select({ sessionVersion: users.sessionVersion })
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
-  return row?.sessionVersion ?? null;
+// A credential account holds the Argon2id hash of the password, where Better Auth reads it.
+export async function insertCredentialAccount(
+  db: Database,
+  userId: string,
+  passwordHash: string,
+): Promise<void> {
+  await db
+    .insert(accounts)
+    .values({ userId, accountId: userId, providerId: "credential", password: passwordHash });
+}
+
+export async function deleteSessions(db: Database, userId: string): Promise<void> {
+  await db.delete(sessions).where(eq(sessions.userId, userId));
 }

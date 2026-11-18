@@ -18,6 +18,35 @@ CI has two costs that slow a team:
 
 A git hook is a gate only on the machine where it is installed. A check that runs only in CI fails after the push, when the author has moved on. A change that passes locally and fails in CI costs a second round trip.
 
+## Decision drivers
+
+1. **Any provider.** The artifact runs on every provider that runs a container, so a change of provider changes no build.
+2. **Same build everywhere.** The artifact builds the same way on a laptop and in CI, from the locked inputs.
+3. **No daemon in CI.** The checks need no Docker daemon, per [ADR-0101](0101-source-control-and-ci.md).
+4. **Safe migrations.** A schema change never races between two instances that start together.
+
+## Considered options
+
+### The artifact
+
+| Option | 1 Any provider | 2 Same build | 3 No daemon | Verdict |
+| --- | --- | --- | --- | --- |
+| The build of one provider, such as a Git push to Vercel | No. The build lives at the provider | No | Yes | Rejected on drivers 1 and 2 |
+| Cloud Native Buildpacks | Yes | The builder image decides the tools | Needs Docker | Rejected on drivers 2 and 3 |
+| A `Dockerfile` | Yes | Only when every base image is pinned by digest | Needs Docker | Rejected on driver 3. It stays the fallback for a provider that builds from source |
+| **An image that Nix builds with `dockerTools`** | **Yes. It is a plain OCI image** | **Yes. `flake.lock` pins every input** | **Yes** | **Chosen** |
+
+Sources:
+
+- [dockerTools in the nixpkgs manual](https://nixos.org/manual/nixpkgs/stable/#sec-pkgs-dockerTools), [Cloud Native Buildpacks](https://buildpacks.io/).
+
+### When migrations run
+
+| Option | 4 Safe migrations | Verdict |
+| --- | --- | --- |
+| At application startup | No. Two instances that start together race on the same migration | Rejected |
+| **An explicit step before the new image serves traffic** | **Yes. One run, and it fails before the deploy** | **Chosen** |
+
 ## Decision
 
 ### The artifact

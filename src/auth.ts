@@ -1,40 +1,28 @@
 import "server-only";
 
+import { nextCookies } from "better-auth/next-js";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import NextAuth from "next-auth";
-import Credentials from "next-auth/providers/credentials";
+import { createAuth } from "@/server/auth";
 import type { Actor } from "@/server/domain/authorization";
-import { actorFor, currentSessionVersion, verifyCredentials } from "@/server/services/accounts";
+import { actorFor } from "@/server/services/accounts";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: { strategy: "jwt", maxAge: 8 * 60 * 60 },
-  pages: { signIn: "/login" },
-  providers: [
-    Credentials({
-      authorize: (credentials) =>
-        verifyCredentials(String(credentials.email ?? ""), String(credentials.password ?? "")),
-    }),
-  ],
-  callbacks: {
-    // A null token signs the user out. An increment of users.session_version ends every issued session.
-    async jwt({ token, user }) {
-      const userId = user?.id ?? token.sub;
-      if (!userId) return null;
-      const issued = user?.sessionVersion ?? token.sessionVersion;
-      const current = await currentSessionVersion(userId);
-      if (current === null || current !== issued) return null;
-      return { ...token, sub: userId, sessionVersion: current };
-    },
-    session({ session, token }) {
-      if (token.sub) session.user.id = token.sub;
-      return session;
-    },
-  },
-});
+type Auth = ReturnType<typeof createAuth>;
+
+// One instance per process, created on first use, so an import or a build opens no connection.
+const state = globalThis as typeof globalThis & { auth?: Auth };
+
+export function getAuth(): Auth {
+  // nextCookies lets a server action set the session cookie. It is the last plugin.
+  state.auth ??= createAuth([nextCookies()]);
+  return state.auth;
+}
 
 export async function requireActor(): Promise<Actor> {
-  const session = await auth();
-  const actor = session?.user.id ? await actorFor(session.user.id) : null;
+  // Reading the headers first marks the page as dynamic, so a build never opens the database.
+  const requestHeaders = await headers();
+  const session = await getAuth().api.getSession({ headers: requestHeaders });
+  const actor = session ? await actorFor(session.user.id) : null;
   if (!actor) {
     redirect("/login");
   }

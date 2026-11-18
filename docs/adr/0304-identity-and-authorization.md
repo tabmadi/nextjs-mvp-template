@@ -1,7 +1,7 @@
 # ADR-0304: Identity and authorization
 
 - **Status:** Accepted
-- **Decides:** Sign-in with Auth.js, the password policy, the storage of API credentials, the tenancy model, and the authorization seam.
+- **Decides:** Sign-in with Better Auth, the password policy, the storage of API credentials, the tenancy model, and the authorization seam.
 
 ## Context
 
@@ -11,36 +11,85 @@ Kratos imports Argon2id hashes in the PHC string format. So users keep their pas
 
 An API credential is different from a password. A customer stores it in code, CI, and agents that this repo does not deploy. If the final product cannot verify the same secret, every customer edits their systems.
 
+## Decision drivers
+
+1. **Portable accounts.** Users, their Argon2id hashes, and their organizations stay in tables that this repo owns and can export.
+2. **Maintained.** The sign-in library gets new features and fixes, not security fixes only.
+3. **Own pages.** The app renders every sign-in, sign-out, and registration page itself.
+4. **No second service.** Nothing beyond the app and its database runs for sign-in, per [ADR-0000](0000-foundations.md).
+5. **One transaction.** A user and its personal organization are created together or not at all.
+
+## Considered options
+
+### The sign-in library
+
+| Option | 1 Portable accounts | 2 Maintained | 3 Own pages | 4 No second service | Verdict |
+| --- | --- | --- | --- | --- | --- |
+| Auth.js, with the Credentials provider | Yes | No. Security fixes only since September 2025, and version 5 never left beta | Yes | Yes | Rejected on driver 2 |
+| Lucia | Yes | No. Its author ended the library in 2025 and points to a guide for writing sessions yourself | Yes | Yes | Rejected on driver 2 |
+| A hosted service, such as Clerk or Auth0 | The provider holds the users | Yes | Partly | No. A vendor runs it | Rejected on drivers 1 and 4 |
+| Sessions written by hand | Yes | The repo maintains them | Yes | Yes | Rejected. Session and cookie code is easy to get wrong, and a library has review |
+| **Better Auth, with its Drizzle adapter** | **Yes. Its tables are ours** | **Yes** | **Yes, through server calls** | **Yes** | **Chosen** |
+
+Sources:
+
+- Auth.js is maintained by the Better Auth team for security fixes: [Auth.js is now part of Better Auth](https://github.com/nextauthjs/next-auth/discussions/13252).
+- Lucia ends: [lucia-auth/lucia](https://github.com/lucia-auth/lucia).
+- The tables and the Drizzle adapter of Better Auth: [better-auth/better-auth](https://github.com/better-auth/better-auth), in `docs/content/docs/concepts/database.mdx` and `docs/content/docs/adapters/drizzle.mdx`.
+
+### The password hash
+
+| Option | Strength | Portable to Kratos | Verdict |
+| --- | --- | --- | --- |
+| bcrypt | A 72-byte input limit, and no memory cost | Yes | Rejected on strength |
+| scrypt, the default of Better Auth | Memory-hard | No import format in Kratos | Rejected on portability |
+| **Argon2id as a PHC string** | **The first choice of OWASP** | **Yes** | **Chosen. Better Auth takes it as a custom hash** |
+
+Sources:
+
+- [OWASP Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html), [RFC 9106](https://www.rfc-editor.org/rfc/rfc9106).
+
+### The authorization
+
+| Option | 4 No second service | Moves to a relation-based model | Verdict |
+| --- | --- | --- | --- |
+| Role checks spread across handlers | Yes | No. Each call site changes | Rejected |
+| OpenFGA or another authorization service | No | Yes | Rejected on driver 4 |
+| **One pure function, `allowed`** | **Yes** | **Yes. A move replaces its body, and the call sites stay** | **Chosen** |
+
 ## Decision
 
 ### Sign-in
 
-The application owns the `users` table, so its data moves with a query. Auth.js handles the session. The application owns every page:
+The application owns the tables `users`, `accounts`, `sessions`, and `verifications`, so their data moves with a query. Better Auth reads and writes them through its Drizzle adapter. A password lives in the `credential` row of `accounts`. Better Auth signs users in and keeps their sessions. The application owns every page:
 
 | Part | Where |
 | --- | --- |
-| Auth.js configuration, with the Credentials provider and JWT sessions of eight hours | `src/auth.ts` |
-| Sign-in | `/login`, a server action that calls the server-side `signIn` of Auth.js |
-| Sign-out | a button whose server action calls the server-side `signOut` of Auth.js |
+| The Better Auth configuration: the adapter, the Argon2id hash, and database sessions of eight hours | `src/server/auth.ts` |
+| One instance per process, with the `nextCookies` plugin, created on first use | `getAuth` in `src/auth.ts` |
+| Sign-in | `/login`, a server action that calls `signInEmail` of Better Auth |
+| Sign-out | a button whose server action calls `signOut` of Better Auth |
 | Registration | `/register`, a server action that calls `register` in `src/server/services/accounts.ts` |
 | The password policy, email normalization, and login input | `src/server/domain/accounts.ts` |
 
-Every real product replaces the built-in pages of Auth.js: they carry no brand, no translation, and no right-to-left layout. So the app ships its own pages. `pages.signIn` sends every Auth.js redirect to `/login`.
+The sign-up of Better Auth is off, so every user comes from `register`. That service creates the user, its credential account, and its personal organization in one transaction. A hook of Better Auth runs after its own commit, so it cannot join that transaction.
+
+The app has no route of Better Auth over HTTP. Every call is a server call from a page or a server action.
 
 A login page that the application owns takes over guarantees that the built-in page gave by construction. Any login page, this one or a replacement, keeps these:
 
 | Guarantee | How the app keeps it |
 | --- | --- |
 | A cross-site request cannot sign a user in | Next.js accepts a server action only from the origin of the app |
-| A response does not reveal whether an account exists | An unknown email and a wrong password show one message. An unknown email is checked against a dummy Argon2id hash, so the response time is the same |
+| A response does not reveal whether an account exists | An unknown email, a malformed email, and a wrong password show one message. For an unknown email, Better Auth still hashes the password with Argon2id, so the response time is the same |
 | A user with an older password can still sign in | Login checks only that both fields are present, and the 1024-byte bound. The password policy applies where a password is set |
 | No redirect leaves the app | Sign-in always goes to a fixed path. The page reads no destination from the request |
-| Login never creates a user | `verifyCredentials` only reads |
+| Login never creates a user | The sign-up of Better Auth is off. A test checks that sign-in and sign-up create no user |
 | An outage does not look like a wrong password | An error other than wrong credentials shows a separate message |
 | The back button never traps a user in a redirect | Sign-in, sign-out, and registration redirect with `RedirectType.replace`, so `/login` and the signed-in page leave the history. `/login` does not redirect a signed-in user, so no two pages send a user to each other. A redirect that depends on the session carries `Cache-Control: no-store`, so the back and forward buttons never replay a redirect from an earlier session state. Next.js sets it on a redirect from a page. A redirect from a proxy sets it explicitly |
 | A failed attempt keeps what the user typed | React resets a form after its action. The action returns the typed values, except the password, and the form refills them |
 
-Each user has a `session_version`. A token carries the version from its sign-in. On each session read, the JWT callback compares it with the stored version. An increment of the stored version ends every issued session.
+A session is a row in `sessions`, and the cookie holds its token. A session read checks the row. `endSessions` deletes every row of a user, which ends every issued session at once.
 
 ### Passwords
 
@@ -55,7 +104,7 @@ Each user has a `session_version`. A token carries the version from its sign-in.
 
 The shape follows [NIST SP 800-63B](https://pages.nist.gov/800-63-3/sp800-63b.html): length carries the strength. Composition rules and forced rotation push users toward predictable patterns. This is also the policy of the sovereign profile.
 
-The session cookie is `SameSite=Lax`, `Secure`, and `HttpOnly`. These are the defaults of Auth.js. `Secure` applies when `AUTH_URL` is an HTTPS origin.
+The session cookie is `SameSite=Lax`, `Secure`, and `HttpOnly`. These are the defaults of Better Auth. `Secure` and the `__Secure-` prefix apply when `AUTH_URL` is an HTTPS origin.
 
 ### API credentials
 
@@ -95,15 +144,19 @@ A role check inside `allowed` is role-based. A product that needs a permission o
 
 A lost API credential cannot be recovered. The customer creates a new one.
 
+A session read is a database query. The cookie cache of Better Auth would save it, but a revoked session would then live until the cache expires, so the cache is off.
+
 ## Rules
 
-- Sign-in uses the Auth.js Credentials provider with JWT sessions. The application owns the `users` table and every sign-in, sign-out, and registration page.
+- Sign-in uses Better Auth with database sessions. The application owns its tables and every sign-in, sign-out, and registration page.
+- The sign-up of Better Auth is off. Every user comes from `register`, in one transaction with its personal organization.
+- The app exposes no route of Better Auth over HTTP.
 - A login page accepts requests only from the origin of the app, and never creates a user.
 - A login page shows one message for an unknown email and for a wrong password, and applies no password policy.
 - A login page redirects only to a fixed path in the app.
 - Sign-in, sign-out, and registration redirect with a history replace, not a push. The login page does not redirect a signed-in user.
 - A redirect that depends on the session carries `Cache-Control: no-store`.
-- Each session read checks the session version of its token against `users.session_version`.
+- A session is a row in `sessions`. Ending the sessions of a user deletes its rows.
 - Passwords are Argon2id hashes stored as PHC strings. `(ref: RFC 9106)`
 - A password has at least 12 characters and at most 1024 UTF-8 bytes. No composition rule and no forced rotation apply. `(ref: NIST SP 800-63B)`
 - A password that resembles the email of the user is rejected.
