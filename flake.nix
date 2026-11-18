@@ -1,4 +1,4 @@
-# The toolchain, the git hooks, the app, its image, and the checks, per ADR-0100 and ADR-0200.
+# The toolchain, the git hooks, the app, its image, and the checks, per ADR-0100, ADR-0110, and ADR-0200.
 # The tabnix module holds every shared part, and this file adds the parts of the app.
 {
   description = "A Next.js modular monolith for one product, one deployable, and one team";
@@ -35,9 +35,9 @@
         { pkgs, inputs', ... }:
         let
           bun2nix = inputs'.bun2nix.packages.default;
-          # Node.js runs the app in production, per ADR-0100.
+          # Node.js runs the app in production, per ADR-0110.
           nodejs = pkgs.nodejs_24;
-          # Biome finds its config in .config/ only through this flag, per ADR-0100.
+          # Biome finds its config in .config/ only through this flag, per ADR-0110.
           biomeConfig = "--config-path .config";
 
           # The install of bun.lock. Next.js needs the hoisted layout of a plain `bun install`.

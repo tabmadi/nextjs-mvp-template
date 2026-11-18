@@ -63,7 +63,7 @@ CI keeps the benefit and removes both costs:
 | Blocking | Advisory. CI is not a required status check | Nobody waits for it. A red run is information |
 | A red run | Fixed or reverted first, before other work | A build that stays red stops being read, per DORA |
 | Speed | One job, under ten minutes | The DORA limit for feedback |
-| Moving parts | The workflow has one step after setup, `just ci`, per [ADR-0100](0100-toolchain.md). The checks need no Docker | The pipeline and a laptop run the same commands |
+| Moving parts | The workflow has one step after setup, `just ci`, per [ADR-0101](0101-source-control-and-ci.md). The checks need no Docker | The pipeline and a laptop run the same commands |
 | Deployment | No CD. A deployment is the deploy step of the provider, or a manual step | A deploy pipeline is a second system to keep working |
 
 `.github/workflows/check.yml` implements the policy.
