@@ -1,7 +1,7 @@
 # ADR-0300: Data and domain
 
-**Status:** Accepted
-**Decides:** Where business rules live, how the schema is defined, and how migrations are applied.
+- **Status:** Accepted
+- **Decides:** Where business rules live, how the schema is defined, and how migrations are applied.
 
 ## Context
 
@@ -28,7 +28,7 @@ The code has four layers. Each one calls only the layers below it in the table.
 
 `withTransaction` runs one operation on one client. Every repository in the operation receives the transaction database. It commits on success and rolls back on failure.
 
-Database tests live in `tests/integration/` and run against `TEST_DATABASE_URL`, never against `DATABASE_URL`. `mise run test:db` runs them.
+Database tests live in `tests/integration/` and run against `TEST_DATABASE_URL`, never against `DATABASE_URL`. `just test-db` runs them, and `just ci` runs them against a PostgreSQL inside the check.
 
 Money is a Postgres `numeric` column and a decimal string in TypeScript and on the wire. It is never a floating-point number. A balance is a debt to a customer, so it moves exactly to any final product, per [ADR-0000](0000-foundations.md).
 

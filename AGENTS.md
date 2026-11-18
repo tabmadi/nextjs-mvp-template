@@ -26,15 +26,19 @@ No task checks these rules. Read your text against the profile before you finish
 - [ADR-0000](docs/adr/0000-foundations.md): the thesis, the profile this repo implements, and the ADR process. Read it before anything else.
 - [docs/adr/README.md](docs/adr/README.md): the ADR index, one line for each ADR.
 
+## A template folder
+
+If a `template/` folder exists, read `template/AGENTS.md` before anything else.
+
 ## What to load first, by task
 
 | Changing | Load | Then check |
 | --- | --- | --- |
-| A route, page, or component | [0400](docs/adr/0400-frontend.md) | `mise run lint:ts` |
-| Business logic | [0300](docs/adr/0300-data-and-domain.md). The `src/server/domain` rule is the load-bearing one | `mise run test` |
-| The schema, a migration, a repository, or a service | [0300](docs/adr/0300-data-and-domain.md) | `mise run db:migrate`, `mise run test:db` |
-| Any user-facing copy | the Simple English profile in [0001](docs/adr/0001-documentation-conventions.md#simple-english) | `mise run lint:ts` |
-| A document, an ADR, or a comment | [0001](docs/adr/0001-documentation-conventions.md) with its Simple English profile, and `_template.md` for a new ADR | `mise run lint:md` |
+| A route, page, or component | [0400](docs/adr/0400-frontend.md) | `just lint-ts` |
+| Business logic | [0300](docs/adr/0300-data-and-domain.md). The `src/server/domain` rule is the load-bearing one | `just test` |
+| The schema, a migration, a repository, or a service | [0300](docs/adr/0300-data-and-domain.md) | `just db-migrate`, `just test-db` |
+| Any user-facing copy | the Simple English profile in [0001](docs/adr/0001-documentation-conventions.md#simple-english) | `just lint-ts` |
+| A document, an ADR, or a comment | [0001](docs/adr/0001-documentation-conventions.md) with its Simple English profile, and `_template.md` for a new ADR | `just lint-md` |
 
 ## How the docs are organised
 
@@ -50,15 +54,12 @@ No task checks these rules. Read your text against the profile before you finish
   - The reader is an expert with an LLM at hand, so nothing that the code shows is written down.
 - **Genre decides the path.** `docs/adr/` holds decisions, `docs/guide/` holds procedures, `docs/reference/` holds lookups, and `docs/product/` holds the product: who it serves, what it sells, and why.
 - **An ADR is law, not a plan.** It states what is true of this repo, never what someone intends to do. Do not add a `Follow-ups` section, a roadmap, or a remark such as `not yet wired`. A gap between an ADR and the repo is unfinished work, not an unfinished decision.
-- **Planned work goes in a local `*.local.md` file.** `.gitignore` excludes these files, and nothing committed links to them.
-  - Never create a committed roadmap, backlog, or status file to replace it.
-  - A `*.local.md` file and its content are private to the engineer who wrote it. Never cite, quote, or reference one in a commit, a doc, a PR description, or any other output.
 
 ## Working in the repo
 
-- The task runner is `mise`, configured in the root `.mise.toml`. Run a task with `mise run <task>`. `mise run setup` installs the dependencies and the git hooks.
-- `mise` pins and installs the tools. In a shell where mise is not active, a bare tool call such as `bun`, `biome`, or `dbmate` comes from `PATH`, at an unpinned version. `mise run <task>` activates the toolchain for that task only. A bare tool call does not.
+- Work inside the dev shell: run `nix develop`, or allow direnv. Then run every task as `just <recipe>`. A bare `bun`, `biome`, or `dbmate` outside the shell resolves from `PATH` at an unpinned version. `just setup` installs the dependencies and the git hooks.
+- A direct `biome` call needs `--config-path .config`. After `bun add` or `bun remove`, run `just bun-nix` and commit `bun.nix` with `bun.lock`.
 - **The domain seam is the one structural rule.** `src/server/domain/` holds pure functions: no React import, no database handle, and no `Request`. Route handlers and server actions do transport and persistence, then call into it. So a later extraction into a separate service is a move, not a rewrite.
-- Next.js generates route types into `.next/types`. `tsc --noEmit` fails on a clean checkout until `next typegen` runs once. `mise run lint:ts` runs it for you.
-- Before you finish a change, run `mise run check` to lint, test, and build. `mise run test`, `lint`, and `format` run each step alone.
-- Before you push, run `mise run ci`. It runs exactly what CI runs, and the `pre-push` hook runs it too. [docs/guide/testing.md](docs/guide/testing.md) lists the fixes for common failures.
+- Next.js generates route types into `.next/types`. `tsc --noEmit` fails on a clean checkout until `next typegen` runs once. `just lint-ts` runs it for you.
+- Before you finish a change, run `just check` to lint, test, and build. `just test`, `lint`, and `format` run each step alone.
+- Before you push, run `just ci`. It runs exactly what CI runs, and the `pre-push` hook runs it too. [docs/guide/testing.md](docs/guide/testing.md) lists the fixes for common failures.

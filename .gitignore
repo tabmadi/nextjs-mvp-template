@@ -1,12 +1,5 @@
 # Dependencies
 /node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
 
 # Testing
 /coverage
@@ -17,9 +10,7 @@
 # Next.js
 /.next/
 /out/
-
-# Production
-/build
+next-env.d.ts
 
 # OS and keys
 .DS_Store
@@ -27,21 +18,59 @@
 
 # Debug logs
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
 
-# Env files. Never commit a real secret.
-.env
-.env.*
+# JetBrains
+.idea/
+.run/
+
+# Visual Studio Code and Visual Studio
+.vscode/
+.history/
+.vs/
+
+# Vim and Neovim
+*~
+*.swp
+*.swo
+
+# Emacs
+\#*\#
+.#*
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Helix
+.helix/
+
+# AI coding agents. AGENTS.md is the one shared file, per AGENTS.md
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+.codex/
+.opencode/
+opencode.json
+opencode.jsonc
+.cursor/
+.cursorrules
+.windsurf/
+.windsurfrules
+.gemini/
+GEMINI.md
+.aider*
+.github/copilot-instructions.md
+
+# Environment variable files
+.env*
 !.env.example
+!.envrc
 
-# Vercel
-.vercel
-
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
-
-# Local working files. They are never committed, per ADR-0000.
+# Personal notes that stay out of git
 *.local.md
+
+# Nix, per ADR-0100
+.direnv/
+result
+result-*
+.pre-commit-config.yaml

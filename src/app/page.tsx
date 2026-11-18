@@ -36,7 +36,7 @@ export default function Home() {
 
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
         The decisions behind this layout are in <code className="font-mono">docs/adr</code>. Run{" "}
-        <code className="font-mono">mise run check</code> before you finish a change.
+        <code className="font-mono">just check</code> before you finish a change.
       </p>
     </main>
   );

@@ -1,7 +1,7 @@
 # ADR-0304: Identity and authorization
 
-**Status:** Accepted
-**Decides:** Sign-in with Auth.js, the password policy, the storage of API credentials, the tenancy model, and the authorization seam.
+- **Status:** Accepted
+- **Decides:** Sign-in with Auth.js, the password policy, the storage of API credentials, the tenancy model, and the authorization seam.
 
 ## Context
 
@@ -25,11 +25,11 @@ The application owns the `users` table, so its data moves with a query. Auth.js 
 | Registration | `/register`, a server action that calls `register` in `src/server/services/accounts.ts` |
 | The password policy, email normalization, and login input | `src/server/domain/accounts.ts` |
 
-Every real product replaces the built-in pages of Auth.js: they carry no brand, no translation, and no right-to-left layout. So the template ships its own pages. `pages.signIn` sends every Auth.js redirect to `/login`.
+Every real product replaces the built-in pages of Auth.js: they carry no brand, no translation, and no right-to-left layout. So the app ships its own pages. `pages.signIn` sends every Auth.js redirect to `/login`.
 
-A login page that the application owns takes over guarantees that the built-in page gave by construction. Any login page, the template one or a replacement, keeps these:
+A login page that the application owns takes over guarantees that the built-in page gave by construction. Any login page, this one or a replacement, keeps these:
 
-| Guarantee | How the template keeps it |
+| Guarantee | How the app keeps it |
 | --- | --- |
 | A cross-site request cannot sign a user in | Next.js accepts a server action only from the origin of the app |
 | A response does not reveal whether an account exists | An unknown email and a wrong password show one message. An unknown email is checked against a dummy Argon2id hash, so the response time is the same |
@@ -89,7 +89,7 @@ The sovereign profile has the same seam: `Checker.Allowed(ctx, action, resource)
 
 ## Consequences
 
-The template has no organization switcher and no invitation flow. A project that adds them changes `requireActor` and adds services. The schema stays.
+The app has no organization switcher and no invitation flow. A change that adds them changes `requireActor` and adds services. The schema stays.
 
 A role check inside `allowed` is role-based. A product that needs a permission on one specific resource, such as a share or a per-resource role, grows the inputs of `allowed`. The call sites do not change.
 
@@ -98,7 +98,9 @@ A lost API credential cannot be recovered. The customer creates a new one.
 ## Rules
 
 - Sign-in uses the Auth.js Credentials provider with JWT sessions. The application owns the `users` table and every sign-in, sign-out, and registration page.
-- A login page accepts requests only from the origin of the app, shows one message for an unknown email and a wrong password, applies no password policy, redirects only to a fixed path in the app, and never creates a user.
+- A login page accepts requests only from the origin of the app, and never creates a user.
+- A login page shows one message for an unknown email and for a wrong password, and applies no password policy.
+- A login page redirects only to a fixed path in the app.
 - Sign-in, sign-out, and registration redirect with a history replace, not a push. The login page does not redirect a signed-in user.
 - A redirect that depends on the session carries `Cache-Control: no-store`.
 - Each session read checks the session version of its token against `users.session_version`.

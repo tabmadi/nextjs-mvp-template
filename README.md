@@ -51,13 +51,15 @@ Count the forces that apply. Zero is the common answer, and this repo is built f
 | Layer | Choice | Why this one |
 | --- | --- | --- |
 | Framework | Next.js 16, App Router | One deployable serves the UI and the API. Server components remove the client-fetch layer |
-| Runtime and package manager | Bun | One binary for install, test, and scripts |
+| Runtime and package manager | Node.js runs the app. Bun installs, tests, and runs scripts | Node.js is the runtime of Next.js. Bun is one fast binary for the rest |
 | Styling | Tailwind 4 | No stylesheet architecture to invent |
 | Data | Postgres through Drizzle | Types are generated from the schema, not asserted against it |
 | Migrations | dbmate | Plain SQL, forward and back, with no framework coupling |
 | Lint and format | Biome | One tool, one config, and no plugin resolution |
-| Commits and hooks | cocogitto, lefthook | Conventional Commits, enforced at commit time |
-| Tasks | mise | Pinned tools and one command surface |
+| Commits and hooks | cocogitto, git-hooks.nix | Conventional Commits, enforced at commit time |
+| Toolchain | Nix with flakes, and tabnix | Every tool pinned by one lock, and the image built from it |
+| Tasks | `just` | One command surface |
+| Editor | Zed | Project settings in `.zed/`, with the tools of the dev shell |
 
 ---
 
@@ -81,21 +83,38 @@ This is the whole extraction plan. When a decomposition force applies, the domai
 
 ## Getting started
 
+Install [Nix](https://nixos.org/download) with flakes, and Docker for the local PostgreSQL. For the editor, also install [Zed](https://zed.dev) and [direnv](https://direnv.net) with nix-direnv.
+
 ```bash
-mise run setup                    # dependencies and git hooks
-cp .env.example .env              # then set AUTH_SECRET to the output of mise run auth:secret
-mise run db:up                    # local PostgreSQL in Docker
-mise run db:migrate
-mise run dev
+nix develop                       # the pinned tools and the git hooks
+just setup                        # the locked dependencies
+cp .env.example .env              # then set AUTH_SECRET to the output of just auth-secret
+just db-up                        # local PostgreSQL in Docker
+just db-migrate
+just dev                          # the inner loop
 ```
 
-`mise run check` is the gate: lint, test, and build. Run it before you finish a change. `mise run ci` runs exactly what CI runs, and the `pre-push` hook runs it, per [the testing guide](docs/guide/testing.md).
+`just check` is the gate: lint, test, and build. Run it before you finish a change. `just ci` runs exactly what CI runs, and the `pre-push` hook runs it, per [the testing guide](docs/guide/testing.md). `just image-up` runs the production image locally, which is the full tier of ADR-0200.
+
+---
+
+## Starting a project
+
+Make a new project with Nix. It copies every file except the `template/` folder, which holds what only the template needs:
+
+```bash
+nix flake new -t github:tabmadi/nextjs-mvp-template my-project
+```
+
+Then follow the steps that it prints. The first ones are `git init` and `git add -A`, because a flake sees only the files that git tracks.
+
+With the GitHub template button, the copy holds `template/` too. Clone it, run `nix develop`, then run `just init`. It prints the same steps and removes `template/` with git.
 
 ---
 
 ## Documentation
 
-Decisions live in [`docs/adr`](docs/adr) and rank above every other file, including [`AGENTS.md`](AGENTS.md). Start at [ADR-0000](docs/adr/0000-foundations.md).
+Decisions live in [`docs/adr`](docs/adr) and rank above every other file, including [`AGENTS.md`](AGENTS.md). Start at [ADR-0000](docs/adr/0000-foundations.md). `template/adr/0000-template-contract.md` records what makes this repo a template.
 
 [ADR-0001](docs/adr/0001-documentation-conventions.md) holds the rules for every text in the repo: Simple English, the banned constructs, and the comment rules.
 

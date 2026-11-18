@@ -1,7 +1,7 @@
 # ADR-0001: Documentation conventions
 
-**Status:** Accepted
-**Decides:** The house style for every document, comment, and UI string: Simple English on the ASD-STE100 model.
+- **Status:** Accepted
+- **Decides:** The house style for every document, comment, and UI string: Simple English on the ASD-STE100 model.
 
 ## Context
 
@@ -83,6 +83,21 @@ These are not prose, and the punctuation rules do not apply to them:
 - A text adopted verbatim from a third party, such as a licence.
 
 **The em dash, en dash, ellipsis, and curly quotes are banned in every tracked text file, code included.** They have no use in code, and a copy-paste from prose is the only way they arrive.
+
+### Shared terms
+
+Every repo uses these terms with one meaning. A repo names only the environments and tiers that it has. The last column maps each term to the names that other teams use.
+
+| Term | Meaning | Other names |
+| --- | --- | --- |
+| environment | A set of running systems with its own secrets and its own data | |
+| `local` | The environment on the machine of one engineer. Each engineer has one, and recreates it freely | development environment |
+| inner loop | The tier of `local` for daily work. The code under change runs natively, and stand-ins can replace what does not change | inner loop |
+| full tier | The tier of `local` that runs the configuration of the deployed environments, with only the local values | production-like ephemeral environment |
+| CI | The checks after a push. They run the same `just ci` as the machine of the engineer | outer loop |
+| `dev` | The first deployed environment, which the team shares | development, integration |
+| `staging` | The deployed environment that rehearses each release of `prod` | pre-production |
+| `prod` | The environment that real users reach | production |
 
 ### Genre decides the path
 
@@ -181,8 +196,8 @@ No task checks the profile, the banned constructs, or the comment rules. A docum
 - No committed file links to an untracked one.
 - A decision lives in `docs/adr/`, a procedure in `docs/guide/`, a lookup in `docs/reference/`, and a product decision in `docs/product/`.
 - Markdown is not hard-wrapped: one line per paragraph, list item, or table row.
-- Tables are compact, never padded: one space inside each pipe and a bare `---` delimiter. `(CI: lint:md)`
-- Markdown passes `rumdl`. `(CI: lint:md)`
+- Tables are compact, never padded: one space inside each pipe and a bare `---` delimiter. `(CI: lint-md)`
+- Markdown passes `rumdl`. `(CI: lint-md)`
 - The first answer to the need for a comment is to extract a named function. `(ref: Fowler, Refactoring)`
 - A comment carries only what an expert reader cannot derive from the code and the ADR set. Doubt resolves to deletion.
 - A comment is one paragraph of at most three lines. One line is the norm.
@@ -193,3 +208,4 @@ No task checks the profile, the banned constructs, or the comment rules. A docum
 - Commented-out code, changelog, author, or date comments, and decorative banners are not committed.
 - A `TODO` cites an issue or an ADR.
 - A comment that exists to explain confusing code is a defect. The code is rewritten.
+- An environment or a tier has the name and the meaning in the table of shared terms.

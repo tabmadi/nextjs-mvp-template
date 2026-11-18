@@ -1,4 +1,4 @@
-# The CI gate, per ADR-0200. It runs `mise run ci`, the same command as the pre-push hook.
+# The CI gate. It runs `just ci` inside the dev shell, the same command as the pre-push hook.
 
 name: check
 
@@ -7,12 +7,22 @@ on:
     branches: [master]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   check:
     runs-on: ubuntu-latest
-    env:
-      TEST_DATABASE_URL: postgres://app:local-test@127.0.0.1:5433/app_test?sslmode=disable
     steps:
-      - uses: actions/checkout@v4
-      - uses: jdx/mise-action@v2
-      - run: mise run ci
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: cachix/install-nix-action@v31
+      # The title becomes the squash commit, so it follows Conventional Commits too.
+      # It goes through `env`, never into the script text, so a title cannot inject shell.
+      - name: Validate the PR title
+        if: github.event_name == 'pull_request'
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: nix develop --command cog --config .config/cog.toml verify "$TITLE"
+      - run: nix develop --command just ci

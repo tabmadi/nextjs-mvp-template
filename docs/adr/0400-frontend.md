@@ -1,7 +1,7 @@
 # ADR-0400: Frontend
 
-**Status:** Accepted
-**Decides:** Rendering strategy, data access from components, and the boundary at which a client component starts.
+- **Status:** Accepted
+- **Decides:** Rendering strategy, data access from components, and the boundary at which a client component starts.
 
 ## Context
 

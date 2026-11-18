@@ -3,16 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "mise run dev",
-    "build": "mise run build",
-    "start": "mise run start",
-    "test": "mise run test",
-    "lint": "mise run lint",
-    "format": "mise run format"
+    "dev": "just dev",
+    "build": "just build",
+    "start": "just start",
+    "test": "just test",
+    "lint": "just lint",
+    "format": "just format"
   },
   "dependencies": {
     "@node-rs/argon2": "2.2.1",
     "drizzle-orm": "^0.45.2",
+    "geist": "^1.9.2",
     "next": "16.3.4",
     "next-auth": "5.0.0-beta.32",
     "pg": "8.22.0",
@@ -31,7 +32,7 @@
     "tailwindcss": "^4",
     "typescript": "^5"
   },
-  "packageManager": "bun@1.3.14",
+  "packageManager": "bun@1.4.4",
   "ignoreScripts": [
     "sharp",
     "unrs-resolver"

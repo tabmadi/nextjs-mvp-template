@@ -1,8 +1,8 @@
-# Local services, per ADR-0200. The app image is the same image that production runs.
+# Local services, per ADR-0200. `just image` loads the image that production runs, and `app` runs it.
 
 services:
   app:
-    build: .
+    image: app:latest
     init: true
     environment:
       DATABASE_URL: postgres://app:local-development@postgres:5432/app_development?sslmode=disable
