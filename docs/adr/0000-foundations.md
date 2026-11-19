@@ -10,7 +10,7 @@ Forces decide an architecture style. The product category does not: two products
 | Axis | Question | Range | This repo |
 | --- | --- | --- | --- |
 | A: Decomposition pressure | Must parts ship, scale, or fail independently | from monolith to many services | **none** |
-| B: Operational sovereignty | Who is permitted to run it | from managed, through hybrid, to self-hosted | **managed** |
+| B: Operational sovereignty | Who is permitted to run it | from managed, through hybrid, to self-hosted | **managed**, or one owned machine in the self-hosted mode of [ADR-0201](0201-self-hosted-mode.md) |
 | C: Correctness stakes | What a wrong answer costs | from cosmetic, through transactional, to regulated | transactional |
 
 A project with no decomposition pressure and no sovereignty constraint pays nothing to run a platform: the provider operates it. Nobody is paged for a component that this repo does not run.

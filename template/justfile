@@ -4,8 +4,26 @@
 lint-scope:
     nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).lint-scope" --no-link --print-build-logs
 
-# Turn a copy from the GitHub template button into a project: print the first steps, then remove template/
-init:
-    @nix eval --raw ".#templates.default.welcomeText"
+# Turn a copy from the GitHub template button into a project: choose the hosting mode of TPL-0001, print the first steps, then remove template/
+init hosting="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    hosting="{{ hosting }}"
+    if [ -z "$hosting" ]; then
+        read -rp "Hosting, managed or self-hosted [managed]: " hosting
+    fi
+    case "${hosting:-managed}" in
+        managed)
+            git rm -r --quiet infra
+            nix eval --raw ".#templates.default.welcomeText"
+            ;;
+        self-hosted)
+            nix eval --raw ".#templates.self-hosted.welcomeText"
+            ;;
+        *)
+            echo "Choose managed or self-hosted." >&2
+            exit 1
+            ;;
+    esac
     git rm -r --quiet template
-    @echo "Removed template/. Commit the removal, then follow the steps above."
+    echo "Removed template/. Commit the removal, then follow the steps above."

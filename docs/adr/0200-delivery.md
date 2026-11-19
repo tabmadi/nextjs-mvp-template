@@ -5,7 +5,7 @@
 
 ## Context
 
-This profile is hosted by a provider, per [ADR-0000](0000-foundations.md). Providers differ in what they accept: a Git push, a build pack, or a container image. A product changes provider more often than it plans to, and a self-hosted platform runs containers on its own cluster.
+This profile is hosted by a provider, per [ADR-0000](0000-foundations.md). A project with `infra/` runs on its own machine instead, per [ADR-0201](0201-self-hosted-mode.md). Providers differ in what they accept: a Git push, a build pack, or a container image. A product changes provider more often than it plans to, and a self-hosted platform runs containers on its own cluster.
 
 Daily work also needs a local database, and a way to run the production artifact before a deploy.
 
@@ -70,7 +70,7 @@ The `local` environment has two tiers, per the shared terms of [ADR-0001](0001-d
 | Inner loop | `just db-up`, then `just dev` | `next dev` on the machine, against the PostgreSQL of `compose.yaml` |
 | Full tier | `just image-up` | The production image, against the same PostgreSQL |
 
-`.env.example` holds the local database URL.
+`.env.example` holds the local database URL. In the self-hosted mode, the full tier is the host in QEMU, per [ADR-0201](0201-self-hosted-mode.md).
 
 ### The database connection
 

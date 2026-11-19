@@ -61,6 +61,9 @@ GEMINI.md
 .aider*
 .github/copilot-instructions.md
 
+# The secrets of the self-hosted mode, which only the host holds, per ADR-0201
+/infra/secrets/
+
 # Environment variable files
 .env*
 !.env.example

@@ -1,4 +1,4 @@
-# The toolchain, the git hooks, the app, its image, and the checks, per ADR-0100, ADR-0110, and ADR-0200.
+# The toolchain, the git hooks, the app, its image, and the checks, per ADR-0100, ADR-0110, ADR-0200, and ADR-0201.
 # The tabnix module holds every shared part, and this file adds the parts of the app.
 {
   description = "A Next.js modular monolith for one product, one deployable, and one team";
@@ -11,9 +11,14 @@
     };
     # A new version is a new tag here.
     tabnix = {
-      url = "github:tabmadi/tabnix/v0.5.0";
+      url = "github:tabmadi/tabnix/v0.6.0";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-parts.follows = "flake-parts";
+    };
+    # The disk layout of the self-hosted mode, per ADR-0201. A project on a provider never fetches it.
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
@@ -26,7 +31,9 @@
         tabnix.flakeModules.default
         tabnix.flakeModules.bun
       ]
-      ++ inputs.nixpkgs.lib.optional (builtins.pathExists ./template/scope.nix) ./template/scope.nix;
+      ++ inputs.nixpkgs.lib.optional (builtins.pathExists ./template/scope.nix) ./template/scope.nix
+      # The self-hosted mode of ADR-0201 adds the host, its deploy, and its full tier. A project on a provider has no infra/.
+      ++ inputs.nixpkgs.lib.optional (builtins.pathExists ./infra/flake-module.nix) ./infra/flake-module.nix;
 
       perSystem =
         { pkgs, config, ... }:

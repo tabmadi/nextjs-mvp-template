@@ -25,7 +25,7 @@ This template ships one profile and documents three neighbours.
 
 > **These are not maturity levels.** For most systems, a modular monolith is a correct *final* state. Higher rows are more expensive answers to pressures that you may not have.
 
-**This repo implements `modular-monolith`.** For the `sovereign` row, use [sovereign-platform-template](https://github.com/tabmadi/sovereign-platform-template), with the same conventions at that scale. The two middle rows are positions, not presets to generate.
+**This repo implements `modular-monolith`, in two hosting modes.** `managed` runs the image at a provider. `self-hosted` runs the app and the database on one NixOS machine that you own, with no orchestrator: start with `nix flake new -t github:tabmadi/nextjs-mvp-template#self-hosted`. More than one machine, or Kubernetes, is the `sovereign` row. For that row, use [sovereign-platform-template](https://github.com/tabmadi/sovereign-platform-template), with the same conventions at that scale. The two middle rows are positions, not presets to generate.
 
 ---
 

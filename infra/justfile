@@ -1,0 +1,31 @@
+# The recipes of the self-hosted mode, per ADR-0201. The root justfile imports this file only when infra/ exists.
+
+# Run the full tier: the host in QEMU, with local secrets and an empty database
+full-tier:
+    nix build .#full-tier --no-link --print-build-logs
+
+# Install NixOS on the host from its rescue system. It erases the disk of infra/settings.nix
+host-install: in-shell
+    nixos-anywhere --flake .#host root@"$(just _address)"
+
+# Copy the secrets in infra/secrets/ to the host. Run it before the first deploy and after each change
+host-secrets:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    host=root@$(just _address)
+    ssh "$host" install -d -m 0700 /var/lib/secrets
+    for f in infra/secrets/*; do ssh "$host" "install -m 0400 /dev/stdin /var/lib/secrets/$(basename "$f")" < "$f"; done
+
+# Deploy the host. A deploy that loses SSH rolls back by itself
+deploy: in-shell
+    deploy .#host
+
+# Deploy a NixOS release upgrade for the next boot, then reboot the host
+deploy-boot: in-shell
+    deploy --boot .#host
+    ssh root@"$(just _address)" systemctl reboot
+
+# The address of the host in infra/settings.nix
+[private]
+_address:
+    @nix eval --raw --file infra/settings.nix address

@@ -4,6 +4,7 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 set dotenv-load
 
 import? 'template/justfile'
+import? 'infra/justfile'
 
 # List the recipes
 default:

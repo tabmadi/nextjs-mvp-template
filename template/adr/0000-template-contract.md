@@ -26,6 +26,8 @@ This repo starts from [github-project-template](https://github.com/tabmadi/githu
 
 GitHub's template button copies every file, `template/` included. In that copy, `just init` prints the same first steps and removes `template/`.
 
+The hosting mode decides whether a project keeps `infra/`, per [TPL-0001](0001-hosting-modes.md). `#self-hosted` after the template address selects the self-hosted mode, and `just init` asks for it.
+
 ### What this template holds
 
 The sample code shows the structure, not a feature set. A project replaces the sample `notes` module with its own modules, and keeps the accounts.
