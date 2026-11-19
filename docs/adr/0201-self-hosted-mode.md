@@ -68,7 +68,7 @@ The unit `app-migrate` in the app guest runs `dbmate up` before the app starts. 
 
 ### The deploy
 
-`just deploy` deploys the host with deploy-rs. The host waits for a new SSH connection after the switch, and rolls back without one. A deploy restarts each guest whose system changed, so the app is down for the restart.
+`just deploy` deploys the host with deploy-rs. The host waits for a new SSH connection after the switch, and rolls back without one. A rollback returns only to a generation that deploy-rs made, so the first deploy after an install changes nothing. A deploy restarts each guest whose system changed, so the app is down for the restart.
 
 A NixOS release upgrade is `just deploy-boot`: a deploy for the next boot, then a reboot. A live switch across releases can fail.
 
@@ -96,5 +96,6 @@ The `disko` input is in `flake.nix` in both modes. A project on a provider never
 - A secret is a file in `/var/lib/secrets` on the host, never in git or in the Nix store.
 - The migrations run in `app-migrate` before the app starts, never in the app.
 - A deploy runs through deploy-rs with magic rollback. `(CI: ci)`
+- The first deploy after `just host-install` changes nothing, so that a rollback has a generation to return to.
 - A NixOS release upgrade is `just deploy-boot`, never a live switch.
 - `just full-tier` passes before a deploy.

@@ -51,8 +51,9 @@ A project with `infra/` runs on one NixOS machine, per [ADR-0201](../adr/0201-se
 2. Run `just host-install`. It erases the disk of `infra/settings.nix` and installs the host.
 3. Run `just host-secrets`. It copies `infra/secrets/` to the host.
 4. Reboot the host: `ssh root@<address> systemctl reboot`.
-5. Point the DNS name of the site at the address of the host.
-6. Check that `GET /api/health/live` answers `200` on the site.
+5. Run `just deploy` once. It changes nothing, but a later rollback needs a generation that deploy-rs made.
+6. Point the DNS name of the site at the address of the host.
+7. Check that `GET /api/health/live` answers `200` on the site.
 
 ### Deploy a change to the host
 
