@@ -11,21 +11,21 @@
     "format": "just format"
   },
   "dependencies": {
-    "@node-rs/argon2": "2.2.1",
-    "better-auth": "1.7.25",
+    "@node-rs/argon2": "2.2.2",
+    "better-auth": "1.7.26",
     "drizzle-orm": "^0.45.2",
     "geist": "^1.9.2",
-    "next": "16.3.4",
-    "pg": "8.22.0",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
+    "next": "16.4.6",
+    "pg": "8.23.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
     "server-only": "0.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/bun": "^1.4.1",
     "@types/node": "^26",
-    "@types/pg": "8.20.0",
+    "@types/pg": "8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "drizzle-kit": "^0.31.10",
