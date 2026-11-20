@@ -11,7 +11,7 @@
     };
     # A new version is a new tag here.
     tabnix = {
-      url = "github:tabmadi/tabnix/v0.8.0";
+      url = "github:tabmadi/tabnix/v0.9.0";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-parts.follows = "flake-parts";
     };
@@ -40,7 +40,7 @@
         let
           inherit (config.tabnix.bun) install check;
           # Node.js runs the app in production, per ADR-0110.
-          nodejs = pkgs.nodejs_24;
+          nodejs = pkgs.nodejs_26;
           # Biome finds its config in .config/ only through this flag, per ADR-0110.
           biomeConfig = "--config-path .config";
 
@@ -146,12 +146,12 @@
               biome ci ${biomeConfig} .
               node node_modules/typescript/bin/tsc --noEmit
             '';
-            test = check "test" [ pkgs.bun ] "bun test src";
+            test = check "test" [ config.tabnix.bun.package ] "bun test src";
             # The database tests run against a PostgreSQL that lives only inside the check.
             test-db =
               check "test-db"
                 [
-                  pkgs.bun
+                  config.tabnix.bun.package
                   pkgs.dbmate
                   pkgs.postgresql_17
                 ]

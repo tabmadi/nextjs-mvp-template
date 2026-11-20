@@ -23,7 +23,7 @@ The shared toolchain of [ADR-0100](0100-toolchain.md) holds no language. This AD
 | --- | --- | --- |
 | Bun | No. Next.js documents Node.js. A pilot measured Bun 1.3 fail to load the Next.js 16.3 runtime, and Bun 1.4 load it | Rejected on driver 1 |
 | Deno | No | Rejected on driver 1 |
-| **Node.js 24** | **Yes** | **Chosen** |
+| **Node.js 26, the Active LTS line since October 2026** | **Yes** | **Chosen** |
 
 Sources:
 

@@ -23,7 +23,7 @@ let
           _module.args = {
             inherit settings;
             app = config.packages.default;
-            nodejs = pkgs.nodejs_24;
+            nodejs = pkgs.nodejs_26;
           };
         }
       ]
