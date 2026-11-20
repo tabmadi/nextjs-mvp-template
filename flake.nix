@@ -153,7 +153,7 @@
                 [
                   config.tabnix.bun.package
                   pkgs.dbmate
-                  pkgs.postgresql_17
+                  pkgs.postgresql_18
                 ]
                 ''
                   export PGDATA=$TMPDIR/pgdata

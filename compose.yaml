@@ -15,15 +15,17 @@ services:
         condition: service_healthy
 
   postgres:
-    image: postgres:17.12-bookworm
+    image: postgres:18.7-bookworm
     environment:
       POSTGRES_USER: app
       POSTGRES_PASSWORD: local-development
       POSTGRES_DB: app_development
     ports:
       - "127.0.0.1:5432:5432"
+    # From PostgreSQL 18 the image keeps its data in a folder per major version under this path. So a major
+    # upgrade with pg_upgrade finds both folders on the same volume.
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U app -d app_development"]
       interval: 2s
@@ -31,7 +33,7 @@ services:
       retries: 15
 
   postgres-test:
-    image: postgres:17.12-bookworm
+    image: postgres:18.7-bookworm
     profiles: [test]
     environment:
       POSTGRES_USER: app
@@ -40,7 +42,7 @@ services:
     ports:
       - "127.0.0.1:5433:5432"
     tmpfs:
-      - /var/lib/postgresql/data
+      - /var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U app -d app_test"]
       interval: 2s
