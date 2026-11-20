@@ -12,6 +12,9 @@
 /out/
 next-env.d.ts
 
+# The output of the incremental mode of TypeScript
+*.tsbuildinfo
+
 # OS and keys
 .DS_Store
 *.pem
