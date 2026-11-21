@@ -15,7 +15,7 @@ services:
         condition: service_healthy
 
   postgres:
-    image: postgres:18.7-bookworm
+    image: postgres:19.0-bookworm
     environment:
       POSTGRES_USER: app
       POSTGRES_PASSWORD: local-development
@@ -33,7 +33,7 @@ services:
       retries: 15
 
   postgres-test:
-    image: postgres:18.7-bookworm
+    image: postgres:19.0-bookworm
     profiles: [test]
     environment:
       POSTGRES_USER: app

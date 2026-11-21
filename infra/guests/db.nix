@@ -4,7 +4,7 @@
 {
   services.postgresql = {
     enable = true;
-    package = pkgs.postgresql_18;
+    package = pkgs.postgresql_19;
     settings.listen_addresses = lib.mkForce net.db;
     ensureDatabases = [ "app" ];
     ensureUsers = [
@@ -31,7 +31,7 @@
     # Only root reads the share, so root reads the password and psql runs as postgres.
     script = ''
       password=$(cat /run/host-secrets/app-password)
-      ${pkgs.util-linux}/bin/runuser -u postgres -- ${pkgs.postgresql_18}/bin/psql --quiet --set=password="$password" <<'SQL'
+      ${pkgs.util-linux}/bin/runuser -u postgres -- ${pkgs.postgresql_19}/bin/psql --quiet --set=password="$password" <<'SQL'
       ALTER ROLE app WITH PASSWORD :'password';
       SQL
     '';

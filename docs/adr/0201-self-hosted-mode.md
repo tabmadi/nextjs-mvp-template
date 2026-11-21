@@ -45,7 +45,7 @@ Sources:
 | Guest | Runs | Reaches |
 | --- | --- | --- |
 | `app` | Caddy on ports 80 and 443, the Next.js server on `127.0.0.1:3000`, and the migrations | The database on port 5432, and the internet for certificates and mail |
-| `db` | PostgreSQL 18 | Nothing. It accepts only the app guest |
+| `db` | PostgreSQL 19 | Nothing. It accepts only the app guest |
 
 The host forwards ports 80 and 443 to the app guest. Caddy gets a certificate for the site of `infra/settings.nix`.
 
