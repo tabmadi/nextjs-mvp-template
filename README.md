@@ -106,9 +106,40 @@ Make a new project with Nix. It copies every file except the `template/` folder,
 nix flake new -t github:tabmadi/nextjs-mvp-template my-project
 ```
 
-Then follow the steps that it prints. The first ones are `git init` and `git add -A`, because a flake sees only the files that git tracks.
+Then follow these steps:
 
-With the GitHub template button, the copy holds `template/` too. Clone it, run `nix develop`, then run `just init`. It prints the same steps and removes `template/` with git.
+1. In the new folder, run `git init` and `git add -A`. A flake sees only the files that git tracks.
+2. Change `name` in `package.json` to your own.
+3. Run `nix develop`. It downloads the tools and installs the git hooks.
+4. Run `just setup`. It installs the locked dependencies.
+5. Replace the sample `notes` module with your own modules.
+6. Rewrite this README for the project.
+7. Update the contacts in `.github/SECURITY.md` and the copyright line in `LICENSE`.
+8. Delete the line that starts with `A new copy` from `AGENTS.md`.
+9. Set the squash merge message to the pull request title, with no body, and turn off the other merge styles:
+
+   ```bash
+   gh api -X PATCH repos/OWNER/REPO -f squash_merge_commit_title=PR_TITLE -f squash_merge_commit_message=BLANK -F allow_merge_commit=false -F allow_rebase_merge=false
+   ```
+
+10. Install the [Renovate app](https://github.com/apps/renovate) on the new repository.
+11. For the `self-hosted` output, follow `infra/README.md` to set the host, its secrets, and its first install.
+
+### With the GitHub template button
+
+The button copies every file, the `template/` folder included. Its first commit, `Initial commit`, is not a Conventional Commit.
+
+1. Clone the new repository, and run `nix develop` in it.
+2. Run `just init`. Choose `managed` or `self-hosted`. It removes the `template/` folder and the `A new copy` line of `AGENTS.md`.
+3. Replace the first commit of GitHub. This is safe before anyone else clones the repository:
+
+   ```bash
+   git add -A
+   git commit --amend -m "chore: start from <template> <release>"
+   git push --force-with-lease
+   ```
+
+4. Follow the steps above from step 2, and skip the step on `AGENTS.md`. Your repository already has git.
 
 ---
 

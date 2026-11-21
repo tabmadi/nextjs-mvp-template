@@ -23,6 +23,7 @@ No task checks these rules. Read your text against the profile before you finish
 
 ## Read first
 
+- A new copy starts with the steps in `Starting a project` in `README.md`. Delete this line when they are done.
 - [ADR-0000](docs/adr/0000-foundations.md): the thesis, the profile this repo implements, and the ADR process. Read it before anything else.
 - [docs/adr/README.md](docs/adr/README.md): the ADR index, one line for each ADR.
 
@@ -64,3 +65,4 @@ If a `template/` folder exists, read `template/AGENTS.md` before anything else.
 - Next.js generates route types into `.next/types`. `tsc --noEmit` fails on a clean checkout until `next typegen` runs once. `just lint-ts` runs it for you.
 - Before you finish a change, run `just check` to lint, test, and build. `just test`, `lint`, and `format` run each step alone.
 - Before you push, run `just ci`. It runs exactly what CI runs, and the `pre-push` hook runs it too. [docs/guide/testing.md](docs/guide/testing.md) lists the fixes for common failures.
+- Commit messages are a Conventional Commits title only, with no body. Never push unless asked to.
