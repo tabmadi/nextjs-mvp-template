@@ -1,3 +1,4 @@
+// lint:money-allow: the Argon2 cost parameters are not money.
 import "server-only";
 
 import { hash, verify } from "@node-rs/argon2";

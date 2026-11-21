@@ -5,6 +5,10 @@
   imports = [ inputs.tabnix.flakeModules.template ];
 
   tabnix.template = {
+    extraVoice = [
+      "github\\.com/tabmadi"
+      "blueprints"
+    ];
     description = "A Next.js modular monolith for one product, one deployable, and one team";
     welcomeText = ''
       # A new project

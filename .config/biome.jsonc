@@ -55,4 +55,44 @@
       },
     },
   },
+  // The domain stays pure, per ADR-0300: no React, database client, request type, or database module.
+  "overrides": [
+    {
+      "includes": ["src/server/domain/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "react": "The domain imports no React, per ADR-0300.",
+                  "react-dom": "The domain imports no React, per ADR-0300.",
+                  "next": "The domain imports no request type, per ADR-0300.",
+                  "pg": "The domain imports no database client, per ADR-0300.",
+                  "drizzle-orm": "The domain imports no database client, per ADR-0300.",
+                },
+                "patterns": [
+                  {
+                    "group": [
+                      "react/*",
+                      "react-dom/*",
+                      "next/*",
+                      "drizzle-orm/*",
+                      "pg/*",
+                      "**/db",
+                      "**/db/**",
+                      "@/server/db",
+                      "@/server/db/**",
+                    ],
+                    "message": "The domain imports no framework, database client, or database module, per ADR-0300.",
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+    },
+  ],
 }

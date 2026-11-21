@@ -77,6 +77,8 @@ Database tests live in `tests/integration/` and run against `TEST_DATABASE_URL`,
 
 Money is a Postgres `numeric` column and a decimal string in TypeScript and on the wire. It is never a floating-point number. A balance is a debt to a customer, so it moves exactly to any final product, per [ADR-0000](0000-foundations.md).
 
+Biome `noRestrictedImports` holds the purity rule of the domain. The rule `money/typescript` of tabrules holds the money rule, through `.config/tabrules.toml`.
+
 Migrations are plain SQL that `dbmate` applies, forward and back. The Drizzle schema and the migrations state the same facts twice. The migrations are the authority, because the application meets the database at runtime.
 
 ## Consequences
@@ -87,11 +89,11 @@ The seam costs an indirection on every write path. That cost pays for the extrac
 
 ## Rules
 
-- A file in `src/server/domain/` imports neither React, nor a database client, nor a request type, nor anything in `src/server/db/`.
+- A file in `src/server/domain/` imports neither React, nor a database client, nor a request type, nor anything in `src/server/db/`. `(CI: lint-ts)`
 - A route handler or server action holds no business rule. It calls a service.
 - A service holds no Next.js request or response type. A repository holds no business rule.
 - Row types are inferred from the Drizzle schema. No row interface is written by hand.
-- Money is `numeric` in Postgres and a decimal string in code and on the wire. No floating-point type holds money.
+- Money is `numeric` in Postgres and a decimal string in code and on the wire. No floating-point type holds money. `(CI: lint-prose)`
 - Database connections are lazy and use a Node.js driver. No import opens a connection.
 - All repositories in one transaction receive the same transaction database.
 - Database tests run only against `TEST_DATABASE_URL`.

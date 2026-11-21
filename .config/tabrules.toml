@@ -1,0 +1,4 @@
+# The rules of tabrules that this repo adopts, per ADR-0104.
+
+[rules."money/typescript"]
+cite = "ADR-0300"

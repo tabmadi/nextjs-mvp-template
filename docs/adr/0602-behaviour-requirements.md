@@ -1,7 +1,7 @@
 # ADR-0602: Behaviour requirements
 
 - **Status:** Accepted
-- **Decides:** What the app does is a list of EARS requirements with IDs in `docs/requirements/`, a test cites each ID, and tablint checks the trace.
+- **Decides:** What the app does is a list of EARS requirements with IDs in `docs/requirements/`, a test cites each ID, and tabrules checks the trace.
 
 ## Context
 
@@ -46,11 +46,11 @@ Sources:
 | --- | --- | --- | --- | --- |
 | A TypeScript port of the Go linter of the platform template, in this repo | Yes | Yes. Bun runs it | No. Each repo with behaviour copies the script | Rejected. The copies drift |
 | The Go linter of the platform template | Yes | No. Go joins the dev shell for one check | No. Each repo copies the tool | Rejected |
-| **A rule group of tablint** | **Yes** | **Yes. tabnix already pins tablint** | **Yes. It reaches every repo through the pin, and it acts only when a requirements file exists** | **Chosen** |
+| **A rule group of tabrules** | **Yes** | **Yes. tabnix already pins tabrules** | **Yes. It reaches every repo through the pin, and it acts only when a requirements file exists** | **Chosen** |
 
 Sources:
 
-- tablint runs in every repo through the `lint-prose` check of tabnix: [ADR-0100](0100-toolchain.md).
+- tabrules runs in every repo through the `lint-prose` check of tabnix: [ADR-0100](0100-toolchain.md).
 
 ## Decision
 
@@ -82,7 +82,7 @@ An ID names one meaning. A requirement whose meaning changes gets a new number, 
 
 A test cites a requirement with its ID at the start of the test name: `test("NOTE-002 rejects a blank title", ...)`. A test can cite more than one ID, and more than one test can cite an ID. `bun test --test-name-pattern NOTE-002` runs the proof of one requirement.
 
-The `requirement` rules of tablint check the trace in both directions, in `just lint-prose` and in CI. Every requirement has a citing test, and every ID that a test cites exists. A requirement with no test is a claim with no proof, so the build is red until the test exists.
+The `requirement` rules of tabrules check the trace in both directions, in `just lint-prose` and in CI. Every requirement has a citing test, and every ID that a test cites exists. A requirement with no test is a claim with no proof, so the build is red until the test exists.
 
 ### How behaviour changes
 
