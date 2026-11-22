@@ -37,7 +37,7 @@ Sources:
 | `managed`, the default | `github:tabmadi/nextjs-mvp-template` | `just init managed` | No `infra/`. A provider runs the image |
 | `self-hosted` | `github:tabmadi/nextjs-mvp-template#self-hosted` | `just init self-hosted` | `infra/`, the host on NixOS of ADR-0201 |
 
-`template/scope.nix` sets both outputs through the `exclude` and `variants` options of the template module of tabnix. `flake.nix` loads `infra/flake-module.nix` only when it exists, so the rest of a project is the same in both modes.
+`template/scope.nix` sets both outputs through the `exclude` and `variants` options of the template module of tabkit. `flake.nix` loads `infra/flake-module.nix` only when it exists, so the rest of a project is the same in both modes.
 
 **The boundary rule.** One machine without an orchestrator is the self-hosted mode of this template. More than one machine, or Kubernetes, is sovereign-platform-template.
 

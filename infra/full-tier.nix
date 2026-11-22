@@ -29,8 +29,8 @@ pkgs.testers.runNixOSTest {
         };
         # The client finds the host by the name of its node.
         networking.hostName = lib.mkForce "host";
-        tabnix.server.adminKeys = lib.mkForce [ keys.snakeOilEd25519PublicKey ];
-        tabnix.microvmHost = {
+        tabkit.server.adminKeys = lib.mkForce [ keys.snakeOilEd25519PublicKey ];
+        tabkit.microvmHost = {
           uplink = lib.mkForce "eth1";
           adminKeys = lib.mkForce [ keys.snakeOilEd25519PublicKey ];
           guests.app.memory = lib.mkForce 1024;

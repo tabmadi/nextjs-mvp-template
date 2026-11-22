@@ -40,7 +40,7 @@ Sources:
 
 ### The host
 
-`infra/host.nix` is the host. It imports the tabnix modules `server` and `microvm-host`, which `flake.nix` pins by a tag, per [ADR-0100](0100-toolchain.md). SSH takes keys only, and the host routes every packet between the guests.
+`infra/host.nix` is the host. It imports the tabkit modules `server` and `microvm-host`, which `flake.nix` pins by a tag, per [ADR-0100](0100-toolchain.md). SSH takes keys only, and the host routes every packet between the guests.
 
 | Guest | Runs | Reaches |
 | --- | --- | --- |
@@ -92,7 +92,7 @@ The `disko` input is in `flake.nix` in both modes. A project on a provider never
 ## Rules
 
 - A project has the self-hosted mode only when it has the `infra/` folder. `flake.nix` loads `infra/flake-module.nix` only when it exists.
-- The host imports the tabnix modules `server` and `microvm-host`. A connection between guests is a `flows` entry, never a rule by hand.
+- The host imports the tabkit modules `server` and `microvm-host`. A connection between guests is a `flows` entry, never a rule by hand.
 - A secret is a file in `/var/lib/secrets` on the host, never in git or in the Nix store.
 - The migrations run in `app-migrate` before the app starts, never in the app.
 - A deploy runs through deploy-rs with magic rollback. `(CI: ci)`

@@ -1,10 +1,10 @@
-# The template scope, per TPL-0000. The template module of tabnix adds the lint-scope check and the templates output.
+# The template scope, per TPL-0000. The template module of tabkit adds the lint-scope check and the templates output.
 # The hosting modes of TPL-0001 are two outputs: `default` for a provider, and `self-hosted`, which keeps infra/.
 { inputs, ... }:
 {
-  imports = [ inputs.tabnix.flakeModules.template ];
+  imports = [ inputs.tabkit.flakeModules.template ];
 
-  tabnix.template = {
+  tabkit.template = {
     extraVoice = [
       "github\\.com/tabmadi"
       "blueprints"

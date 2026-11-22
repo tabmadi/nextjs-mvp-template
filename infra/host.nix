@@ -44,12 +44,12 @@ in
     linkConfig.RequiredForOnline = "routable";
   };
 
-  tabnix.server = {
+  tabkit.server = {
     enable = true;
     inherit (settings) adminKeys;
   };
 
-  tabnix.microvmHost = {
+  tabkit.microvmHost = {
     enable = true;
     inherit (net) gateway;
     uplink = "eth0";

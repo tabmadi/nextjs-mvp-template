@@ -77,7 +77,7 @@ Database tests live in `tests/integration/` and run against `TEST_DATABASE_URL`,
 
 Money is a Postgres `numeric` column and a decimal string in TypeScript and on the wire. It is never a floating-point number. A balance is a debt to a customer, so it moves exactly to any final product, per [ADR-0000](0000-foundations.md).
 
-Biome `noRestrictedImports` holds the purity rule of the domain. The rule `money/typescript` of tabrules holds the money rule, through `.config/tabrules.toml`.
+Biome `noRestrictedImports` holds the purity rule of the domain. The rule `money/typescript` of tabkit holds the money rule, through `.config/tabkit.toml`.
 
 Migrations are plain SQL that `dbmate` applies, forward and back. The Drizzle schema and the migrations state the same facts twice. The migrations are the authority, because the application meets the database at runtime.
 

@@ -16,8 +16,8 @@ let
     withSystem system (
       { config, pkgs, ... }:
       [
-        inputs.tabnix.nixosModules.server
-        inputs.tabnix.nixosModules.microvm-host
+        inputs.tabkit.nixosModules.server
+        inputs.tabkit.nixosModules.microvm-host
         ./host.nix
         {
           _module.args = {
@@ -30,7 +30,7 @@ let
     );
 in
 {
-  imports = [ inputs.tabnix.flakeModules.deploy ];
+  imports = [ inputs.tabkit.flakeModules.deploy ];
 
   flake.nixosConfigurations.host = inputs.nixpkgs.lib.nixosSystem {
     inherit system;
@@ -41,13 +41,13 @@ in
   };
 
   # A deploy that loses SSH rolls back by itself, per ADR-0201.
-  tabnix.deploy.nodes.host.hostname = settings.address;
+  tabkit.deploy.nodes.host.hostname = settings.address;
 
   perSystem =
     { pkgs, system, ... }:
     {
-      tabnix.packages = [
-        inputs.tabnix.inputs.deploy-rs.packages.${system}.default
+      tabkit.packages = [
+        inputs.tabkit.inputs.deploy-rs.packages.${system}.default
         pkgs.nixos-anywhere
       ];
 

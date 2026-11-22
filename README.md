@@ -57,8 +57,8 @@ Count the forces that apply. Zero is the common answer, and this repo is built f
 | Migrations | dbmate | Plain SQL, forward and back, with no framework coupling |
 | Lint and format | Biome | One tool, one config, and no plugin resolution |
 | Commits and hooks | cocogitto, git-hooks.nix | Conventional Commits, enforced at commit time |
-| Toolchain | Nix with flakes, and tabnix | Every tool pinned by one lock, and the image built from it |
-| Custom rules | tabrules | The rules of the ADRs that no language linter holds |
+| Toolchain | Nix with flakes, and tabkit | Every tool pinned by one lock, and the image built from it |
+| Custom rules | tabkit | The rules of the ADRs that no language linter holds |
 | Tasks | `just` | One command surface |
 | Editor | Zed | Project settings in `.zed/`, with the tools of the dev shell |
 

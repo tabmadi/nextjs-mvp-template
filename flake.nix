@@ -1,5 +1,5 @@
 # The toolchain, the git hooks, the app, its image, and the checks, per ADR-0100, ADR-0110, ADR-0200, and ADR-0201.
-# The tabnix module holds every shared part, and this file adds the parts of the app.
+# The tabkit module holds every shared part, and this file adds the parts of the app.
 {
   description = "A Next.js modular monolith for one product, one deployable, and one team";
 
@@ -10,8 +10,8 @@
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
     # A new version is a new tag here.
-    tabnix = {
-      url = "github:tabmadi/tabnix/v0.15.0";
+    tabkit = {
+      url = "github:tabmadi/tabkit/v0.16.0";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-parts.follows = "flake-parts";
     };
@@ -23,13 +23,13 @@
   };
 
   outputs =
-    inputs@{ flake-parts, tabnix, ... }:
+    inputs@{ flake-parts, tabkit, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       # The template scope adds its own checks and outputs. A copy has no template/ folder, so it adds nothing.
-      # The bun module of tabnix holds Bun, bun2nix, the hook for bun.nix, and the install and check helpers.
+      # The bun module of tabkit holds Bun, bun2nix, the hook for bun.nix, and the install and check helpers.
       imports = [
-        tabnix.flakeModules.default
-        tabnix.flakeModules.bun
+        tabkit.flakeModules.default
+        tabkit.flakeModules.bun
       ]
       ++ inputs.nixpkgs.lib.optional (builtins.pathExists ./template/scope.nix) ./template/scope.nix
       # The self-hosted mode of ADR-0201 adds the host, its deploy, and its full tier. A project on a provider has no infra/.
@@ -38,7 +38,7 @@
       perSystem =
         { pkgs, config, ... }:
         let
-          inherit (config.tabnix.bun) install check;
+          inherit (config.tabkit.bun) install check;
           # Node.js runs the app in production, per ADR-0110.
           nodejs = pkgs.nodejs_26;
           # Biome finds its config in .config/ only through this flag, per ADR-0110.
@@ -109,7 +109,7 @@
           };
         in
         {
-          tabnix.packages = [
+          tabkit.packages = [
             nodejs
             pkgs.biome
             pkgs.dbmate
@@ -117,17 +117,17 @@
           ];
 
           # Next.js needs Node.js and the hoisted layout of a plain `bun install`.
-          tabnix.bun = {
+          tabkit.bun = {
             tools = [ nodejs ];
             installFlags = [ "--linker=hoisted" ];
             env.NEXT_TELEMETRY_DISABLED = "1";
           };
 
           # dbmate writes no schema dump. The migrations are the authority, per ADR-0300.
-          tabnix.env.DBMATE_NO_DUMP_SCHEMA = "true";
+          tabkit.env.DBMATE_NO_DUMP_SCHEMA = "true";
 
           # A fix stops the commit, so the engineer reviews the change and stages it.
-          tabnix.hooks.biome = {
+          tabkit.hooks.biome = {
             name = "biome";
             entry = "${pkgs.biome}/bin/biome check ${biomeConfig} --write --no-errors-on-unmatched";
             files = "\\.(ts|tsx|js|jsx|css)$";
@@ -146,12 +146,12 @@
               biome ci ${biomeConfig} .
               node node_modules/typescript/bin/tsc --noEmit
             '';
-            test = check "test" [ config.tabnix.bun.package ] "bun test src";
+            test = check "test" [ config.tabkit.bun.package ] "bun test src";
             # The database tests run against a PostgreSQL that lives only inside the check.
             test-db =
               check "test-db"
                 [
-                  config.tabnix.bun.package
+                  config.tabkit.bun.package
                   pkgs.dbmate
                   pkgs.postgresql_19
                 ]
