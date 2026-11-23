@@ -1,7 +1,7 @@
 # ADR-0110: TypeScript
 
 - **Status:** Accepted
-- **Decides:** Node.js runs Next.js, Bun installs and tests, Biome lints and formats, and bun2nix gives Nix the locked dependencies.
+- **Decides:** Node.js runs Next.js and the tests, Bun only installs, Biome lints and formats, and bun2nix gives Nix the locked dependencies.
 
 ## Context
 
@@ -35,11 +35,12 @@ Sources:
 | Option | 2 Fast loop | 3 Few tools | Verdict |
 | --- | --- | --- | --- |
 | npm or pnpm, with Vitest | Slower install | Two tools | Rejected on drivers 2 and 3 |
-| **Bun, with `bun:test`** | **Yes** | **One tool** | **Chosen. Tests run on Bun, and the app runs on Node.js** |
+| Bun, with `bun:test` | Yes | One tool | Rejected. Tests would run on another runtime than the deployed app |
+| **Bun as the installer, with Vitest on Node.js** | **Yes** | **Two tools** | **Chosen. Tests run on the runtime of the deployed app** |
 
 Sources:
 
-- [Bun install](https://bun.sh/docs/cli/install), [bun:test](https://bun.sh/docs/cli/test).
+- [Bun install](https://bun.sh/docs/cli/install), [Vitest](https://vitest.dev/guide/).
 
 ### The linter and the formatter
 
@@ -66,7 +67,7 @@ Sources:
 
 ## Decision
 
-Node.js runs Next.js in development, in the build, and in production. Bun installs the dependencies, runs the tests, and runs the scripts. The dev shell takes `bun` and `nodejs_24` from `nixpkgs`, and `packageManager` in `package.json` names the same Bun version.
+Node.js runs Next.js in development, in the build, and in production. Vitest runs the tests on Node.js, with at most two workers. Bun only installs the dependencies. The dev shell takes Bun from tabkit and `nodejs_26` from `nixpkgs`, and `packageManager` in `package.json` names the same Bun version.
 
 Biome is both the linter and the formatter, for TypeScript, JavaScript, and CSS. Its `next` and `react` domains cover the rules of the framework. dprint keeps JSON, per [ADR-0104](0104-formatters-and-linters.md).
 
@@ -90,12 +91,13 @@ Sources:
 
 - The rule set of Biome is narrower than the rule set of ESLint. The `next` domain of Biome covers the Next-specific rules of `eslint-config-next`, but not one for one.
 - Next.js generates route types into `.next/types`. So `tsc --noEmit` fails on a clean checkout until `next typegen` runs. `lint-ts` runs it first.
-- Tests run on Bun and the app on Node.js. A difference between the two runtimes can pass the tests and fail in production.
+- Vitest uses more memory than `bun:test`. The limit of two workers keeps the unit suite small.
 - A dependency change also changes `bun.nix`. `just bun-nix` writes it.
 
 ## Rules
 
-- Node.js runs Next.js. Bun installs, tests, and runs scripts.
+- Node.js runs Next.js and the tests. Bun only installs.
+- Vitest runs with at most two workers.
 - A Biome rule is disabled by name with a reason in `.config/biome.jsonc`. `(CI: lint-ts)`
 - Every Biome call passes `--config-path .config`, and the config excludes `.config` from its files.
 - `bun.nix` matches `bun.lock` in every commit.

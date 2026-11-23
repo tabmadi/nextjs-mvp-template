@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { API_CREDENTIAL_PREFIX, hashApiCredential, newApiCredential } from "./api-credentials";
 
 describe("newApiCredential", () => {

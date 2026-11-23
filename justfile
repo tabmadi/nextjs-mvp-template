@@ -66,8 +66,8 @@ image-up: image
     docker compose up --wait app
 
 # Run the unit tests
-test: in-shell
-    bun test src
+test *args: in-shell
+    NODE_OPTIONS=--conditions=react-server node node_modules/vitest/vitest.mjs run {{ args }}
 
 # Start the disposable test PostgreSQL
 db-test-up:
@@ -81,7 +81,7 @@ db-test-down:
 test-db: in-shell
     test -n "${TEST_DATABASE_URL:-}" || { echo "TEST_DATABASE_URL is not set. Copy .env.example to .env." >&2; exit 1; }
     dbmate --env TEST_DATABASE_URL up
-    bun --conditions=react-server test --preload ./tests/setup.database.ts tests/integration
+    NODE_OPTIONS=--conditions=react-server node node_modules/vitest/vitest.mjs run --config vitest.database.config.ts
 
 # Biome, and the TypeScript compiler after the route types
 lint-ts: in-shell

@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { normalizeEmail, parseLoginInput, passwordError, validateRegistration } from "./accounts";
 
 describe("normalizeEmail", () => {

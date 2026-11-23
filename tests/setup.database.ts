@@ -1,4 +1,4 @@
-import { afterAll } from "bun:test";
+import { afterAll } from "vitest";
 import { closeDatabase } from "@/server/db/client";
 
 // Database tests never run against the development database.

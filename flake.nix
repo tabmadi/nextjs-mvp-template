@@ -146,12 +146,13 @@
               biome ci ${biomeConfig} .
               node node_modules/typescript/bin/tsc --noEmit
             '';
-            test = check "test" [ config.tabkit.bun.package ] "bun test src";
+            test =
+              check "test" [ ]
+                "NODE_OPTIONS=--conditions=react-server node node_modules/vitest/vitest.mjs run";
             # The database tests run against a PostgreSQL that lives only inside the check.
             test-db =
               check "test-db"
                 [
-                  config.tabkit.bun.package
                   pkgs.dbmate
                   pkgs.postgresql_19
                 ]
@@ -164,7 +165,7 @@
                   export TEST_DATABASE_URL=postgres://app@127.0.0.1:5433/app_test?sslmode=disable
                   export DBMATE_NO_DUMP_SCHEMA=true
                   dbmate --env TEST_DATABASE_URL up
-                  bun --conditions=react-server test --preload ./tests/setup.database.ts tests/integration
+                  NODE_OPTIONS=--conditions=react-server node node_modules/vitest/vitest.mjs run --config vitest.database.config.ts
                   pg_ctl --wait stop
                 '';
           };

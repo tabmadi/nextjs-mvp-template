@@ -65,7 +65,7 @@ The code has four layers. Each one calls only the layers below it in the table.
 | Repositories | `src/server/repositories/` | Database reads and writes | Business rules |
 | Domain | `src/server/domain/` | Business rules as pure functions, with their own input types | React, a database client, a request type, or anything in `src/server/db/` |
 
-`bun test` tests the domain with no fixtures. The notes example shows each layer once.
+Vitest tests the domain with no fixtures. The notes example shows each layer once.
 
 `src/server/db/` holds the Drizzle schema and the client. Row types are inferred from the schema with `$inferSelect` and `$inferInsert`. They are never written by hand.
 

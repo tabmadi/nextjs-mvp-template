@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test } from "bun:test";
+import { beforeEach, describe, expect, test } from "vitest";
 import { ForbiddenError } from "@/server/domain/authorization";
 import { createNote, recentNotes } from "@/server/services/notes";
 import { registerActor, resetDatabase } from "../helpers";

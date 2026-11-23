@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { type Actor, allowed } from "./authorization";
 
 const member: Actor = { userId: "u1", organizationId: "o1", role: "member" };

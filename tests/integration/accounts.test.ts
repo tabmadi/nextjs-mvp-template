@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, test } from "bun:test";
 import { isAPIError } from "better-auth/api";
 import { sql } from "drizzle-orm";
+import { beforeEach, describe, expect, test } from "vitest";
 import { createAuth } from "@/server/auth";
 import { getDb } from "@/server/db/client";
 import { users } from "@/server/db/schema";
@@ -52,7 +52,7 @@ describe("register", () => {
     expect(result.rows).toHaveLength(1);
     expect(result.rows[0]?.provider_id).toBe("credential");
     expect(result.rows[0]?.account_id).toBe(actor.userId);
-    expect(String(result.rows[0]?.password)).toStartWith("$argon2id$v=19$");
+    expect(String(result.rows[0]?.password).startsWith("$argon2id$v=19$")).toBe(true);
   });
 
   test("ACC-001 ACC-009 rejects a duplicate email in any case", async () => {

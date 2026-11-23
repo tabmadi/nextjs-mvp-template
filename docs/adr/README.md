@@ -12,7 +12,7 @@ Each ADR ends with a flat **Rules** section and has a one-sentence **Decides** l
 | [0103](0103-tasks.md) | `just` runs every task, and the recipe names `setup`, `format`, `lint`, `test`, `check`, and `ci` are a contract |
 | [0104](0104-formatters-and-linters.md) | One formatter for each tracked file type, each with a check, and every tool config in `.config/` |
 | [0105](0105-editor.md) | Zed is the supported editor, with committed project settings, and no check depends on an editor |
-| [0110](0110-typescript.md) | Node.js runs Next.js, Bun installs and tests, Biome lints and formats, and bun2nix gives Nix the locked dependencies |
+| [0110](0110-typescript.md) | Node.js runs Next.js and the tests, Bun only installs, Biome lints and formats, and bun2nix gives Nix the locked dependencies |
 | [0200](0200-delivery.md) | The deployable artifact, the local tiers, the CI gate, and how migrations reach production |
 | [0201](0201-self-hosted-mode.md) | A project with `infra/` runs the app and the database in two microVMs on one owned NixOS machine, with an automatic rollback |
 | [0300](0300-data-and-domain.md) | Where business rules live, how the schema is defined, and how migrations are applied |

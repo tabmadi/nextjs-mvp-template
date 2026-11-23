@@ -51,7 +51,7 @@ Count the forces that apply. Zero is the common answer, and this repo is built f
 | Layer | Choice | Why this one |
 | --- | --- | --- |
 | Framework | Next.js 16, App Router | One deployable serves the UI and the API. Server components remove the client-fetch layer |
-| Runtime and package manager | Node.js runs the app. Bun installs, tests, and runs scripts | Node.js is the runtime of Next.js. Bun is one fast binary for the rest |
+| Runtime and package manager | Node.js runs the app and Vitest. Bun only installs | Tests run on the runtime of the deployed app. Bun is a fast installer |
 | Styling | Tailwind 4 | No stylesheet architecture to invent |
 | Data | Postgres through Drizzle | Types are generated from the schema, not asserted against it |
 | Migrations | dbmate | Plain SQL, forward and back, with no framework coupling |

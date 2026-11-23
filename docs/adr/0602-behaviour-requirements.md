@@ -80,7 +80,7 @@ An ID names one meaning. A requirement whose meaning changes gets a new number, 
 
 ### The trace
 
-A test cites a requirement with its ID at the start of the test name: `test("NOTE-002 rejects a blank title", ...)`. A test can cite more than one ID, and more than one test can cite an ID. `bun test --test-name-pattern NOTE-002` runs the proof of one requirement.
+A test cites a requirement with its ID at the start of the test name: `test("NOTE-002 rejects a blank title", ...)`. A test can cite more than one ID, and more than one test can cite an ID. `just test -t NOTE-002` runs the proof of one requirement.
 
 The `requirement` rules of tabkit check the trace in both directions, in `just lint-prose` and in CI. Every requirement has a citing test, and every ID that a test cites exists. A requirement with no test is a claim with no proof, so the build is red until the test exists.
 
