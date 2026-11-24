@@ -5,4 +5,5 @@ What the app does, per [ADR-0602](../adr/0602-behaviour-requirements.md). One fi
 | File | Prefix | Module |
 | --- | --- | --- |
 | [accounts](accounts.md) | `ACC` | Registration, sign-in, sessions, organizations, and API credentials |
+| [security](security.md) | `SEC` | Client addresses, metrics access, rate limits, and signed webhooks |
 | [notes](notes.md) | `NOTE` | The sample module: notes in an organization |
