@@ -40,7 +40,7 @@ A project with `infra/` runs on one NixOS machine, per [ADR-0201](../adr/0201-se
 1. Set each value of `infra/settings.nix`: the host name, the disk, the address, the site, and your SSH key.
 2. Make the folder `infra/secrets/`. Git ignores it.
 3. Write `infra/secrets/app-password` with a new random password.
-4. Write `infra/secrets/app.env` with `DATABASE_URL`, `AUTH_SECRET`, and `AUTH_URL`.
+4. Write `infra/secrets/app.env` with `DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL`, the `SMTP_` values, and `TRUSTED_PROXY_RANGES`, as `.env.example` lists them.
 5. Point `DATABASE_URL` at `postgres://app:<password>@10.20.0.20:5432/app?sslmode=disable`.
 6. Run `just auth-secret` to make a value for `AUTH_SECRET`.
 7. Run `just full-tier`. It boots the host in QEMU and checks the app.
@@ -65,9 +65,18 @@ A deploy that loses SSH rolls back by itself after five minutes.
 
 ### Upgrade the NixOS release
 
-1. Move the `nixpkgs` input to the new release, then run `just ci` and `just full-tier`.
+1. Move the `nixos` input to the new release, then run `just ci` and `just full-tier`.
 2. Run `just deploy-boot`. It deploys for the next boot, then reboots the host.
 
 ### Roll back the host
 
-Run `ssh root@<address> nixos-rebuild switch --rollback`. The schema stays, so a rollback does not undo a migration.
+Run `ssh root@<address> nixos-rebuild switch --rollback --no-reexec`. The flag skips a rebuild of `nixos-rebuild` itself, which needs a `nixos-config` path that a flake host does not have. The schema stays, so a rollback does not undo a migration.
+
+### Change a secret
+
+1. Change the file in `infra/secrets/`.
+2. Run `just host-secrets`.
+3. Restart the guest that reads it: `ssh root@<address> systemctl restart microvm@app`, or `microvm@db` for `app-password`.
+4. Check that `GET /api/health/live` answers `200`.
+
+A new `app-password` also needs the same password in `DATABASE_URL` of `app.env`. Change both, then restart `microvm@db` before `microvm@app`.
