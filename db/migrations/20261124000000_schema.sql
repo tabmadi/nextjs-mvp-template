@@ -96,6 +96,31 @@ CREATE TABLE notes (
 
 CREATE INDEX notes_organization_id_created_at_idx ON notes (organization_id, created_at DESC);
 
+-- The API credentials of an organization, and the stored response of each Idempotency-Key.
+CREATE TABLE api_credentials (
+    id              uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+    organization_id uuid        NOT NULL REFERENCES organizations (id) ON DELETE CASCADE,
+    name            text        NOT NULL,
+    key_hash        text        NOT NULL UNIQUE,
+    display_prefix  text        NOT NULL,
+    created_by      uuid        REFERENCES users (id) ON DELETE SET NULL,
+    created_at      timestamptz NOT NULL DEFAULT now(),
+    last_used_at    timestamptz,
+    revoked_at      timestamptz
+);
+
+CREATE INDEX api_credentials_organization_id_idx ON api_credentials (organization_id);
+
+CREATE TABLE idempotency_keys (
+    organization_id uuid        NOT NULL REFERENCES organizations (id) ON DELETE CASCADE,
+    key             text        NOT NULL,
+    request_hash    text        NOT NULL,
+    status_code     integer,
+    response        jsonb,
+    created_at      timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (organization_id, key)
+);
+
 -- One row counts the hits of one bucket in one fixed window.
 CREATE TABLE rate_limits (
     bucket       text        NOT NULL,
@@ -106,6 +131,8 @@ CREATE TABLE rate_limits (
 
 -- migrate:down
 DROP TABLE rate_limits;
+DROP TABLE idempotency_keys;
+DROP TABLE api_credentials;
 DROP TABLE notes;
 DROP TABLE totp_used_codes;
 DROP TABLE two_factors;

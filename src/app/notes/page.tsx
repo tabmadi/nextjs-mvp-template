@@ -15,6 +15,9 @@ export default async function NotesPage() {
           <a href="/account/two-factor" className="underline">
             Second factor
           </a>
+          <a href="/account/api-credentials" className="underline">
+            API credentials
+          </a>
           <form action={signOutAction}>
             <button type="submit" className="underline">
               Sign out

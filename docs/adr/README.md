@@ -16,6 +16,7 @@ Each ADR ends with a flat **Rules** section and has a one-sentence **Decides** l
 | [0200](0200-delivery.md) | The deployable artifact, the local tiers, the CI gate, and how migrations reach production |
 | [0201](0201-self-hosted-mode.md) | A project with `infra/` runs the app and the database in two microVMs on one owned NixOS machine, with an automatic rollback |
 | [0300](0300-data-and-domain.md) | Where business rules live, how the schema is defined, and how migrations are applied |
+| [0303](0303-public-api.md) | The public API: bearer credentials, one error shape, idempotent writes, and signed webhooks |
 | [0304](0304-identity-and-authorization.md) | Sign-in with Better Auth, the password policy, the storage of API credentials, the tenancy model, and the authorization seam |
 | [0400](0400-frontend.md) | Rendering strategy, data access from components, and the boundary at which a client component starts |
 | [0602](0602-behaviour-requirements.md) | What the app does is a list of EARS requirements with IDs in `docs/requirements/`, a test cites each ID, and tabkit checks the trace |

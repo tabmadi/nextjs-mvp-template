@@ -13,3 +13,11 @@ export function newApiCredential(): NewApiCredential {
 export function hashApiCredential(secret: string): string {
   return createHash("sha256").update(secret).digest("hex");
 }
+
+export const API_CREDENTIAL_NAME_MAX = 60;
+
+/** The secret of an `Authorization: Bearer sk_...` header, or null. */
+export function bearerCredential(header: string | null): string | null {
+  const match = header?.match(/^Bearer (sk_[A-Za-z0-9_-]{20,})$/);
+  return match?.[1] ?? null;
+}
