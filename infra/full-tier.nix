@@ -102,7 +102,11 @@ pkgs.testers.runNixOSTest {
             host.execute(f"{db} 'systemctl --no-pager status prometheus-node-exporter prometheus-postgres-exporter; ss -ltn; nft list ruleset | grep -n dport' >&2")
             raise
         host.succeed(f"{app} \"curl -s http://127.0.0.1:9090/api/v1/rules\" | grep -q BackupTooOld")
-        host.succeed(f"{app} \"curl -s http://127.0.0.1:9090/api/v1/query?query=pgbackrest_last_full_backup_timestamp_seconds\" | grep -q pgbackrest_last_full_backup")
+        # The metric appears at the next scrape of the db guest.
+        host.wait_until_succeeds(
+            f"{app} \"curl -s http://127.0.0.1:9090/api/v1/query?query=pgbackrest_last_full_backup_timestamp_seconds\" | grep -q pgbackrest_last_full_backup",
+            timeout=180,
+        )
         host.succeed(f"{app} systemctl is-active alertmanager")
 
   '';
