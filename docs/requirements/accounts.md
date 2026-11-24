@@ -29,6 +29,25 @@ What the accounts module does, per [ADR-0602](../adr/0602-behaviour-requirements
 | ACC-014 | If a client signs up through Better Auth directly, the app refuses it, so every user comes from registration. |
 | ACC-015 | When the app ends the sessions of a user, it ends every session it issued to that user. |
 
+## Second factor
+
+| ID | Requirement |
+| --- | --- |
+| ACC-022 | The app stores the secret of a second factor only in encrypted form. |
+| ACC-023 | When a user turns on a second factor, the app ends every other session of that user. |
+| ACC-024 | While a user has a second factor, the app opens a session only after a valid code. |
+| ACC-025 | The app accepts each code of a second factor only once, and rejects a wrong code. |
+| ACC-026 | The app turns off a second factor only after the password of the user. |
+
+## Password reset
+
+| ID | Requirement |
+| --- | --- |
+| ACC-027 | If a reset names an unknown email, the app gives the same answer and sends no mail. |
+| ACC-028 | When a user follows a reset link, the app sets the new password once, and the link then stops working. |
+| ACC-029 | When a reset sets a password, the app ends every session of the user and sends a notice. |
+| ACC-030 | If a reset link is older than 30 minutes, the app rejects it. |
+
 ## Organizations
 
 | ID | Requirement |

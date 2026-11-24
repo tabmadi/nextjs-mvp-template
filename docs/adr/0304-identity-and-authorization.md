@@ -61,7 +61,7 @@ Sources:
 
 ### Sign-in
 
-The application owns the tables `users`, `accounts`, `sessions`, and `verifications`, so their data moves with a query. Better Auth reads and writes them through its Drizzle adapter. A password lives in the `credential` row of `accounts`. Better Auth signs users in and keeps their sessions. The application owns every page:
+The application owns the tables `users`, `accounts`, `sessions`, `verifications`, and `two_factors`, so their data moves with a query. Better Auth reads and writes them through its Drizzle adapter. A password lives in the `credential` row of `accounts`. Better Auth signs users in and keeps their sessions. The application owns every page:
 
 | Part | Where |
 | --- | --- |
@@ -69,6 +69,9 @@ The application owns the tables `users`, `accounts`, `sessions`, and `verificati
 | One instance per process, with the `nextCookies` plugin, created on first use | `getAuth` in `src/auth.ts` |
 | Sign-in | `/login`, a server action that calls `signInEmail` of Better Auth |
 | Sign-out | a button whose server action calls `signOut` of Better Auth |
+| The code step of sign-in | `/login/verify`, a server action that calls `verifyTOTP` of Better Auth |
+| The second factor | `/account/two-factor`, which turns a second factor on or off |
+| Password reset | `/password/forgot` and `/password/reset`, server actions that call `requestPasswordReset` and `resetPassword` of Better Auth |
 | Registration | `/register`, a server action that calls `register` in `src/server/services/accounts.ts` |
 | The password policy, email normalization, and login input | `src/server/domain/accounts.ts` |
 
@@ -105,6 +108,25 @@ A session is a row in `sessions`, and the cookie holds its token. A session read
 The shape follows [NIST SP 800-63B](https://pages.nist.gov/800-63-3/sp800-63b.html): length carries the strength. Composition rules and forced rotation push users toward predictable patterns. This is also the policy of the sovereign profile.
 
 The session cookie is `SameSite=Lax`, `Secure`, and `HttpOnly`. These are the defaults of Better Auth. `Secure` and the `__Secure-` prefix apply when `AUTH_URL` is an HTTPS origin.
+
+### Second factor
+
+A user can add a second factor: a time-based code from an authenticator app, per [RFC 6238](https://www.rfc-editor.org/rfc/rfc6238). The two-factor plugin of Better Auth keeps the secret in `two_factors`, encrypted with `AUTH_SECRET`. A second factor is optional for each user. A product that requires it for every user sends a user without one to `/account/two-factor` from `requireActor`.
+
+| Concern | Rule |
+| --- | --- |
+| Enrolment | The user confirms the password, scans the code of the app, and enters one code. The first code turns the factor on |
+| Sign-in | While a user has a second factor, the password alone opens no session. `/login/verify` turns the challenge into a session |
+| One use | The plugin accepts a code again inside its time window. The guard in `src/server/single-use-totp.ts` claims each code in `totp_used_codes` first, so a code works once |
+| Older sessions | A session counts as verified once its user has a second factor. So enrolment ends every other session of the user |
+| Attempts | Five codes for each user in five minutes. A code that fails releases its claim, so a typo never blocks the right code |
+| Turning it off | The user confirms the password |
+
+### Password reset
+
+The reset flow of Better Auth keeps a single-use token in `verifications` for 30 minutes. The reset mail links to `/password/reset` of the app, never to a route of Better Auth. A finished reset ends every session of the user and sends a notice mail. A request for an unknown email gives the same answer and sends no mail, so the page does not show which accounts exist. Each address and each email has a request limit for each hour.
+
+Mail goes through SMTP from `SMTP_HOST`. Without it, as on a laptop, the app writes each mail to the log.
 
 ### API credentials
 
@@ -160,6 +182,10 @@ A session read is a database query. The cookie cache of Better Auth would save i
 - Passwords are Argon2id hashes stored as PHC strings. `(ref: RFC 9106)`
 - A password has at least 12 characters and at most 1024 UTF-8 bytes. No composition rule and no forced rotation apply. `(ref: NIST SP 800-63B)`
 - A password that resembles the email of the user is rejected.
+- While a user has a second factor, sign-in opens a session only after a valid code. A code works only once.
+- Enrolment in a second factor ends every other session of the user.
+- A password reset token works once and for at most 30 minutes. A finished reset ends every session of the user.
+- A reset request gives the same answer for an unknown email and sends it no mail.
 - The session cookie is `SameSite=Lax`, `Secure`, and `HttpOnly`. `(ref: RFC 6265bis)`
 - An API credential is a random secret of at least 128 bits with a fixed product prefix. The database stores only its SHA-256 hash and a display prefix. The secret is shown once.
 - Every protected resource belongs to an organization, and a user acts only through a role in an organization.

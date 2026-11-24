@@ -1,13 +1,14 @@
 -- migrate:up
 -- Better Auth reads users, accounts, sessions, and verifications, per ADR-0304.
 CREATE TABLE users (
-    id             uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-    email          text        NOT NULL UNIQUE CHECK (email = lower(btrim(email))),
-    name           text        NOT NULL,
-    email_verified boolean     NOT NULL DEFAULT false,
-    image          text,
-    created_at     timestamptz NOT NULL DEFAULT now(),
-    updated_at     timestamptz NOT NULL DEFAULT now()
+    id                 uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+    email              text        NOT NULL UNIQUE CHECK (email = lower(btrim(email))),
+    name               text        NOT NULL,
+    email_verified     boolean     NOT NULL DEFAULT false,
+    image              text,
+    two_factor_enabled boolean     NOT NULL DEFAULT false,
+    created_at         timestamptz NOT NULL DEFAULT now(),
+    updated_at         timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE TABLE organizations (
@@ -67,6 +68,24 @@ CREATE TABLE verifications (
     updated_at timestamptz NOT NULL DEFAULT now()
 );
 
+-- The second factor of Better Auth, and each accepted code, per ADR-0304.
+CREATE TABLE two_factors (
+    id                        uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id                   uuid        NOT NULL UNIQUE REFERENCES users (id) ON DELETE CASCADE,
+    secret                    text        NOT NULL,
+    backup_codes              text        NOT NULL,
+    verified                  boolean     NOT NULL DEFAULT false,
+    failed_verification_count integer     NOT NULL DEFAULT 0,
+    locked_until              timestamptz
+);
+
+CREATE TABLE totp_used_codes (
+    user_id    uuid        NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    code_hash  bytea       NOT NULL,
+    expires_at timestamptz NOT NULL,
+    PRIMARY KEY (user_id, code_hash)
+);
+
 CREATE TABLE notes (
     id              uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id uuid        NOT NULL REFERENCES organizations (id) ON DELETE CASCADE,
@@ -88,6 +107,8 @@ CREATE TABLE rate_limits (
 -- migrate:down
 DROP TABLE rate_limits;
 DROP TABLE notes;
+DROP TABLE totp_used_codes;
+DROP TABLE two_factors;
 DROP TABLE verifications;
 DROP TABLE sessions;
 DROP TABLE accounts;

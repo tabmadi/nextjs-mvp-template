@@ -20,8 +20,9 @@ export async function loginAction(
   if (!input) {
     return { error: "Enter your email and password.", email: String(formData.get("email") ?? "") };
   }
+  let result: Awaited<ReturnType<ReturnType<typeof getAuth>["api"]["signInEmail"]>>;
   try {
-    await getAuth().api.signInEmail({ body: input, headers: await headers() });
+    result = await getAuth().api.signInEmail({ body: input, headers: await headers() });
   } catch (error) {
     if (isAPIError(error)) {
       // One message for an unknown email, a malformed email, and a wrong password, so the page does not reveal accounts.
@@ -36,6 +37,10 @@ export async function loginAction(
       };
     }
     throw error;
+  }
+  // A user with a second factor gets a session only after a code, per ADR-0304.
+  if ("twoFactorRedirect" in result && result.twoFactorRedirect) {
+    redirect("/login/verify", RedirectType.replace);
   }
   // A replace removes /login from the history, so the back button never returns to it after sign-in.
   redirect("/notes", RedirectType.replace);

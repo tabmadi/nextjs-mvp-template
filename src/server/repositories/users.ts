@@ -9,6 +9,11 @@ export async function insertUser(db: Database, values: NewUser): Promise<User> {
   return user;
 }
 
+export async function findUserById(db: Database, id: string): Promise<User | undefined> {
+  const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return user;
+}
+
 export async function findUserByEmail(db: Database, email: string): Promise<User | undefined> {
   const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
   return user;

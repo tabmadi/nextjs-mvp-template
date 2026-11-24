@@ -24,7 +24,8 @@ export function passwordError(password: string, email: string): string | null {
   if (new TextEncoder().encode(password).length > PASSWORD_MAX_BYTES) {
     return `Use at most ${PASSWORD_MAX_BYTES} bytes.`;
   }
-  if (resemblesEmail(password, email)) {
+  // An empty email skips this check, as on the reset page, where the email is not known yet.
+  if (email && resemblesEmail(password, email)) {
     return "Do not use your email in the password.";
   }
   return null;

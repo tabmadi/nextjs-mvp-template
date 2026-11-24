@@ -1,6 +1,8 @@
 import {
   boolean,
+  customType,
   index,
+  integer,
   pgTable,
   primaryKey,
   text,
@@ -15,9 +17,12 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   emailVerified: boolean("email_verified").notNull().default(false),
   image: text("image"),
+  twoFactorEnabled: boolean("two_factor_enabled").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+const bytea = customType<{ data: Buffer }>({ dataType: () => "bytea" });
 
 // The tables of Better Auth, per ADR-0304. The property names are the field names that Better Auth reads.
 export const accounts = pgTable(
@@ -109,6 +114,33 @@ export const notes = pgTable(
   (table) => [
     index("notes_organization_id_created_at_idx").on(table.organizationId, table.createdAt.desc()),
   ],
+);
+
+// The second factor of Better Auth, per ADR-0304. Better Auth encrypts the secret with AUTH_SECRET.
+export const twoFactors = pgTable("two_factors", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .unique()
+    .references(() => users.id, { onDelete: "cascade" }),
+  secret: text("secret").notNull(),
+  backupCodes: text("backup_codes").notNull(),
+  verified: boolean("verified").notNull().default(false),
+  failedVerificationCount: integer("failed_verification_count").notNull().default(0),
+  lockedUntil: timestamp("locked_until", { withTimezone: true }),
+});
+
+// Each accepted code, so a code works only once in its time window, per ADR-0304.
+export const totpUsedCodes = pgTable(
+  "totp_used_codes",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    codeHash: bytea("code_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.codeHash] })],
 );
 
 export type User = typeof users.$inferSelect;

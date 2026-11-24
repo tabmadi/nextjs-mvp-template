@@ -11,11 +11,16 @@ export default async function NotesPage() {
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-8 px-6 py-16">
       <div className="flex items-baseline justify-between">
         <h1 className="text-3xl font-semibold tracking-tight">Notes</h1>
-        <form action={signOutAction}>
-          <button type="submit" className="text-sm underline">
-            Sign out
-          </button>
-        </form>
+        <div className="flex gap-4 text-sm">
+          <a href="/account/two-factor" className="underline">
+            Second factor
+          </a>
+          <form action={signOutAction}>
+            <button type="submit" className="underline">
+              Sign out
+            </button>
+          </form>
+        </div>
       </div>
       <NoteForm />
       <ul className="flex flex-col gap-4">

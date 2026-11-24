@@ -4,7 +4,7 @@ import type { Actor } from "@/server/domain/authorization";
 import { actorFor, register } from "@/server/services/accounts";
 
 export async function resetDatabase(): Promise<void> {
-  await getDb().execute(sql`TRUNCATE users, organizations CASCADE`);
+  await getDb().execute(sql`TRUNCATE users, organizations, verifications, rate_limits CASCADE`);
 }
 
 export async function registerActor(email: string): Promise<Actor> {

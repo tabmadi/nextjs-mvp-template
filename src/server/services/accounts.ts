@@ -14,7 +14,12 @@ import {
   insertMembership,
   insertOrganization,
 } from "../repositories/organizations";
-import { deleteSessions, insertCredentialAccount, insertUser } from "../repositories/users";
+import {
+  deleteSessions,
+  findUserById,
+  insertCredentialAccount,
+  insertUser,
+} from "../repositories/users";
 
 export type RegisterResult =
   | { ok: true; userId: string }
@@ -69,4 +74,9 @@ function isUniqueViolation(error: unknown): boolean {
   const cause =
     typeof error === "object" && error !== null && "cause" in error ? error.cause : undefined;
   return codeOf(error) === "23505" || codeOf(cause) === "23505";
+}
+
+/** Whether sign-in asks this user for a code, per ADR-0304. */
+export async function secondFactorEnabled(userId: string): Promise<boolean> {
+  return (await findUserById(getDb(), userId))?.twoFactorEnabled ?? false;
 }
