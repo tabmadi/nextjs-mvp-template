@@ -72,18 +72,32 @@ The unit `app-migrate` in the app guest runs `dbmate up` before the app starts. 
 
 A NixOS release upgrade is `just deploy-boot`: a deploy for the next boot, then a reboot. A live switch across releases can fail.
 
+### The backups and the alerts
+
+The `db` guest runs PostgreSQL on the tabkit `postgres` module. pgBackRest archives the WAL at least once a minute and takes a full backup each night. A metric holds the time of the newest full backup.
+
+| Part | Where |
+| --- | --- |
+| The repository of pgBackRest | `backup.repository` in `infra/settings.nix`. The default is a folder on the `db` guest |
+| The keys of an S3 repository | `infra/secrets/pgbackrest.env`. The `db` guest reaches the internet only with an S3 repository |
+| The steps of a restore | `docs/guide/restore.md` |
+
+The default folder keeps the backups on the same machine, so they do not survive the loss of the host. A host that holds real data sets an S3 bucket in another location.
+
+The `app` guest runs Prometheus and Alertmanager on the tabkit `monitoring` module. Prometheus scrapes the node exporters of the host and both guests, and the PostgreSQL exporter. Alertmanager mails each alert through the SMTP server of `alerts` in `infra/settings.nix`, to `ALERT_EMAIL_TO` of `infra/secrets/alerts.env`. Each alert names its runbook in `docs/guide/runbooks/`.
+
 ### The local tiers
 
 | Tier | Recipe | Runs |
 | --- | --- | --- |
 | Inner loop | `just db-up`, then `just dev` | The same as on a provider, per [ADR-0200](0200-delivery.md) |
-| Full tier | `just full-tier` | The host in QEMU with its two guests, local secrets, and an empty database. A client checks that the app serves and that the migrations ran |
+| Full tier | `just full-tier` | The host in QEMU with its two guests, local secrets, and an empty database. A client checks that the app serves and that the migrations ran. The host takes a backup, restores it, and scrapes every exporter |
 
 The full tier needs KVM. It is not a step of `just ci`, because CI must finish in under ten minutes. `just ci` builds the host and runs the checks of deploy-rs.
 
 ## Consequences
 
-The project runs the machine: the disk, the backups, and the NixOS release. A provider did this before.
+The project runs the machine: the disk, the backup repository, the alert mail, and the NixOS release. A provider did this before.
 
 A deploy of the app restarts the app guest, so each deploy has a short downtime.
 
@@ -94,6 +108,8 @@ The `disko` input is in `flake.nix` in both modes. A project on a provider never
 - A project has the self-hosted mode only when it has the `infra/` folder. `flake.nix` loads `infra/flake-module.nix` only when it exists.
 - The host imports the tabkit modules `server` and `microvm-host`. A connection between guests is a `flows` entry, never a rule by hand.
 - A secret is a file in `/var/lib/secrets` on the host, never in git or in the Nix store.
+- pgBackRest archives the WAL and takes a nightly full backup. A host that holds real data keeps the repository in a bucket in another location.
+- Every alert names a runbook in `docs/guide/runbooks/`.
 - The migrations run in `app-migrate` before the app starts, never in the app.
 - A deploy runs through deploy-rs with magic rollback. `(CI: ci)`
 - The first deploy after `just host-install` changes nothing, so that a rollback has a generation to return to.

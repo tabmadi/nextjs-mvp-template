@@ -23,6 +23,7 @@ let
           _module.args = {
             inherit settings;
             app = config.packages.default;
+            tabkitModules = inputs.tabkit.nixosModules;
             nodejs = inputs.nixos.legacyPackages.${system}.nodejs_26;
             # The stable release has no PostgreSQL 19, so the database alone comes from nixpkgs-unstable.
             postgresql = pkgs.postgresql_19;
@@ -57,7 +58,19 @@ in
       packages = lib.optionalAttrs (system == "x86_64-linux") {
         full-tier = import ./full-tier.nix {
           inherit pkgs;
-          modules = host (settings // { site = ":80"; });
+          # The full tier sends no mail: its alert mail has no login and goes to a closed local port.
+          modules = host (
+            settings
+            // {
+              site = ":80";
+              alerts = {
+                smarthost = "127.0.0.1:25";
+                from = "alerts@localhost";
+                username = null;
+                requireTls = false;
+              };
+            }
+          );
         };
       };
     };

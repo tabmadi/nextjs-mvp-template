@@ -37,13 +37,16 @@ A project with `infra/` runs on one NixOS machine, per [ADR-0201](../adr/0201-se
 
 ### Before the first install
 
-1. Set each value of `infra/settings.nix`: the host name, the disk, the address, the site, and your SSH key.
+1. Set each value of `infra/settings.nix`: the host name, the disk, the address, the site, your SSH key, the backup repository, and the alert mail.
 2. Make the folder `infra/secrets/`. Git ignores it.
 3. Write `infra/secrets/app-password` with a new random password.
 4. Write `infra/secrets/app.env` with `DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL`, the `SMTP_` values, and `TRUSTED_PROXY_RANGES`, as `.env.example` lists them.
-5. Point `DATABASE_URL` at `postgres://app:<password>@10.20.0.20:5432/app?sslmode=disable`.
-6. Run `just auth-secret` to make a value for `AUTH_SECRET`.
-7. Run `just full-tier`. It boots the host in QEMU and checks the app.
+5. Write `infra/secrets/alerts.env` with `ALERT_EMAIL_TO`, the receiver of the alert mail.
+6. Write `infra/secrets/smtp-password` with the SMTP password of `alerts.username` in `infra/settings.nix`.
+7. For an S3 backup repository, write `infra/secrets/pgbackrest.env` with `PGBACKREST_REPO1_S3_KEY`, `PGBACKREST_REPO1_S3_KEY_SECRET`, and `PGBACKREST_REPO1_CIPHER_PASS`.
+8. Point `DATABASE_URL` at `postgres://app:<password>@10.20.0.20:5432/app?sslmode=disable`.
+9. Run `just auth-secret` to make a value for `AUTH_SECRET`.
+10. Run `just full-tier`. It boots the host in QEMU and checks the app.
 
 ### Install the host
 
@@ -71,6 +74,15 @@ A deploy that loses SSH rolls back by itself after five minutes.
 ### Roll back the host
 
 Run `ssh root@<address> nixos-rebuild switch --rollback --no-reexec`. The flag skips a rebuild of `nixos-rebuild` itself, which needs a `nixos-config` path that a flake host does not have. The schema stays, so a rollback does not undo a migration.
+
+### Read the metrics and alerts
+
+Prometheus and Alertmanager run on the `app` guest and listen on its loopback address only. Alertmanager mails each alert to `ALERT_EMAIL_TO`, and each alert names its runbook in [the runbooks](runbooks/README.md).
+
+1. Open a tunnel: `ssh -J root@<address> -L 9090:127.0.0.1:9090 -L 9093:127.0.0.1:9093 root@10.20.0.10`.
+2. Open `http://localhost:9090/alerts` for Prometheus, or `http://localhost:9093` for Alertmanager.
+
+The backups and the restore steps are in [the restore guide](restore.md).
 
 ### Change a secret
 

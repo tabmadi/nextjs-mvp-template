@@ -1,5 +1,6 @@
 # The full tier of the self-hosted mode, per ADR-0201. The host runs in QEMU with its two guests nested, local
 # secrets, and an empty database. A client beyond the host checks that the app migrated the database and serves.
+# The host also takes a backup, restores it into a scratch folder, and scrapes every exporter.
 { pkgs, modules }:
 let
   keys = import "${pkgs.path}/nixos/tests/ssh-keys.nix" pkgs;
@@ -41,6 +42,7 @@ pkgs.testers.runNixOSTest {
           "d /var/lib/secrets 0700 root root -"
           "C /var/lib/secrets/app.env 0400 root root - ${appEnv}"
           "f /var/lib/secrets/app-password 0400 root root - ${password}"
+          "f /var/lib/secrets/alerts.env 0400 root root - ALERT_EMAIL_TO=operator@localhost"
         ];
       };
     client.environment.systemPackages = [ pkgs.curl ];
@@ -68,6 +70,40 @@ pkgs.testers.runNixOSTest {
         count = host.succeed(f"{ssh} root@10.20.0.20 \"runuser -u postgres -- psql -d app -tAc '{query}'\"").strip()
         expected = "${toString (builtins.length (builtins.attrNames (builtins.readDir ../db/migrations)))}"
         assert count == expected, count
+
+    db = f"{ssh} root@10.20.0.20"
+    app = f"{ssh} root@10.20.0.10"
+
+    with subtest("A full backup runs, and the age metric records it"):
+        host.succeed(f"{db} systemctl start tabkit-postgres-backup.service")
+        host.succeed(f"{db} 'pgbackrest-env pgbackrest --stanza=main info' | grep -q 'full backup'")
+        host.succeed(f"{db} grep -q '^pgbackrest_last_full_backup_timestamp_seconds' /var/lib/tabkit-metrics/pgbackrest.prom")
+
+    with subtest("The backup restores into a scratch folder with every migration"):
+        scratch = "/var/lib/postgresql/restore-test"
+        host.succeed(f"{db} 'pgbackrest-env mkdir -m 0700 {scratch}'")
+        host.succeed(f"{db} 'pgbackrest-env pgbackrest --stanza=main --pg1-path={scratch} --archive-mode=off restore'")
+        host.succeed(f"{db} 'pgbackrest-env touch {scratch}/postgresql.conf'")
+        host.succeed(f"{db} \"pgbackrest-env pg_ctl -D {scratch} -l /tmp/restore-test.log -w -o '-p 5433 -c listen_addresses=localhost -c unix_socket_directories=/tmp -c archive_mode=off' start\"")
+        host.wait_until_succeeds(f"{db} \"pgbackrest-env psql -h /tmp -p 5433 -d app -tAc 'select pg_is_in_recovery()'\" | grep -qx f", timeout=120)
+        restored = host.succeed(f"{db} \"pgbackrest-env psql -h /tmp -p 5433 -d app -tAc '{query}'\"").strip()
+        assert restored == expected, restored
+        host.succeed(f"{db} 'pgbackrest-env pg_ctl -D {scratch} -m fast stop'")
+
+    with subtest("Prometheus scrapes every target and loads the backup alerts"):
+        try:
+            host.wait_until_succeeds(
+                f"{app} \"curl -s http://127.0.0.1:9090/api/v1/targets\" | grep -o '\"health\":\"up\"' | wc -l | grep -qx 5",
+                timeout=180,
+            )
+        except Exception:
+            # Each target with its health and last error shows which scrape fails.
+            host.execute(f"{app} \"curl -s http://127.0.0.1:9090/api/v1/targets\" | grep -o '\"scrapeUrl\":\"[^\"]*\"\\|\"lastError\":\"[^\"]*\"\\|\"health\":\"[a-z]*\"' >&2")
+            host.execute(f"{db} 'systemctl --no-pager status prometheus-node-exporter prometheus-postgres-exporter; ss -ltn; nft list ruleset | grep -n dport' >&2")
+            raise
+        host.succeed(f"{app} \"curl -s http://127.0.0.1:9090/api/v1/rules\" | grep -q BackupTooOld")
+        host.succeed(f"{app} \"curl -s http://127.0.0.1:9090/api/v1/query?query=pgbackrest_last_full_backup_timestamp_seconds\" | grep -q pgbackrest_last_full_backup")
+        host.succeed(f"{app} systemctl is-active alertmanager")
 
   '';
 }

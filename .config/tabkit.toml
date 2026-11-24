@@ -2,3 +2,8 @@
 
 [rules."money/typescript"]
 cite = "ADR-0300"
+
+# Every alert names a runbook that exists, per ADR-0201.
+[rules."alert/runbook"]
+cite = "ADR-0201"
+paths = ["config/monitoring/*.yml"]

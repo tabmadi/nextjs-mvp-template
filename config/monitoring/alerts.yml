@@ -1,0 +1,33 @@
+# The alerts of the database, per ADR-0201. The tabkit module adds the base alerts of the host. Each alert names its
+# runbook in docs/guide/runbooks/.
+groups:
+  - name: database
+    rules:
+      - alert: WalArchivingFailing
+        expr: >-
+          increase(pg_stat_archiver_failed_count[10m]) > 0
+          or pg_stat_archiver_last_archive_age > 300
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: WAL archiving to the backup repository fails
+          runbook: docs/guide/runbooks/wal-archiving-failing.md
+
+      - alert: BackupTooOld
+        expr: time() - pgbackrest_last_full_backup_timestamp_seconds > 26 * 3600
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: The newest full backup is older than 26 hours
+          runbook: docs/guide/runbooks/backup-too-old.md
+
+      - alert: BackupMissing
+        expr: absent(pgbackrest_last_full_backup_timestamp_seconds)
+        for: 26h
+        labels:
+          severity: critical
+        annotations:
+          summary: No full backup exists 26 hours after the start
+          runbook: docs/guide/runbooks/backup-too-old.md

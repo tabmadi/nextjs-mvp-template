@@ -1,7 +1,9 @@
 # The host of the self-hosted mode, per ADR-0201. It runs the app and the database as two microVMs, and the host
 # drops every connection between them except the app to the database.
 {
+  lib,
   settings,
+  tabkitModules,
   app,
   nodejs,
   postgresql,
@@ -9,6 +11,9 @@
   ...
 }:
 let
+  # An S3 repository needs its keys and a route to the bucket. The default folder on vm-db needs neither.
+  s3Backup = (settings.backup.repository.repo1-type or "posix") == "s3";
+  smtpLogin = settings.alerts.username != null;
   net = {
     gateway = "10.20.0.1";
     app = "10.20.0.10";
@@ -72,14 +77,23 @@ in
           80
           443
         ];
-        secrets."app.env" = "/var/lib/secrets/app.env";
-        config = import ./guests/app.nix {
-          inherit
-            app
-            nodejs
-            net
-            settings
-            ;
+        secrets = {
+          "app.env" = "/var/lib/secrets/app.env";
+          "alerts.env" = "/var/lib/secrets/alerts.env";
+        }
+        // lib.optionalAttrs smtpLogin { "smtp-password" = "/var/lib/secrets/smtp-password"; };
+        config = {
+          imports = [
+            tabkitModules.monitoring
+            (import ./guests/app.nix {
+              inherit
+                app
+                nodejs
+                net
+                settings
+                ;
+            })
+          ];
         };
       };
       db = {
@@ -87,16 +101,43 @@ in
         mac = "02:00:00:00:00:20";
         memory = 1024;
         dataSize = 20480;
-        secrets."app-password" = "/var/lib/secrets/app-password";
-        config = import ./guests/db.nix { inherit net postgresql; };
+        egress = s3Backup;
+        secrets = {
+          "app-password" = "/var/lib/secrets/app-password";
+        }
+        // lib.optionalAttrs s3Backup { "pgbackrest.env" = "/var/lib/secrets/pgbackrest.env"; };
+        config = {
+          imports = [
+            tabkitModules.postgres
+            (import ./guests/db.nix {
+              inherit net postgresql;
+              backup = {
+                inherit (settings.backup) repository;
+                secrets = s3Backup;
+              };
+            })
+          ];
+        };
       };
     };
     flows = [
       {
         from = "app";
         to = "db";
-        ports = [ 5432 ];
+        # PostgreSQL, and the node and PostgreSQL exporters for the Prometheus of the app guest.
+        ports = [
+          5432
+          9100
+          9187
+        ];
       }
     ];
   };
+
+  # The metrics of the host, for the Prometheus of the app guest.
+  services.prometheus.exporters.node = {
+    enable = true;
+    listenAddress = net.gateway;
+  };
+  networking.firewall.interfaces.vm-app.allowedTCPPorts = [ 9100 ];
 }
