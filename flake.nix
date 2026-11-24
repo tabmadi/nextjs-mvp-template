@@ -11,9 +11,11 @@
     };
     # A new version is a new tag here.
     tabkit = {
-      url = "github:tabmadi/tabkit/v0.19.0";
+      url = "github:tabmadi/tabkit/v0.20.0";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-parts.follows = "flake-parts";
+      # Only the own checks of tabkit read this input, so it adds no second nixpkgs here.
+      inputs.nixos-stable.follows = "nixpkgs";
     };
     # The disk layout of the self-hosted mode, per ADR-0201. A project on a provider never fetches it.
     disko = {
