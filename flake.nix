@@ -5,6 +5,8 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    # The machines of the self-hosted mode build from the stable release, per ADR-0100.
+    nixos.url = "github:NixOS/nixpkgs/nixos-26.05";
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
@@ -14,8 +16,7 @@
       url = "github:tabmadi/tabkit/v0.20.0";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-parts.follows = "flake-parts";
-      # Only the own checks of tabkit read this input, so it adds no second nixpkgs here.
-      inputs.nixos-stable.follows = "nixpkgs";
+      inputs.nixos-stable.follows = "nixos";
     };
     # The disk layout of the self-hosted mode, per ADR-0201. A project on a provider never fetches it.
     disko = {

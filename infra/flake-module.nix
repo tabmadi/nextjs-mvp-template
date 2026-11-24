@@ -23,7 +23,9 @@ let
           _module.args = {
             inherit settings;
             app = config.packages.default;
-            nodejs = pkgs.nodejs_26;
+            nodejs = inputs.nixos.legacyPackages.${system}.nodejs_26;
+            # The stable release has no PostgreSQL 19, so the database alone comes from nixpkgs-unstable.
+            postgresql = pkgs.postgresql_19;
           };
         }
       ]
@@ -32,7 +34,7 @@ in
 {
   imports = [ inputs.tabkit.flakeModules.deploy ];
 
-  flake.nixosConfigurations.host = inputs.nixpkgs.lib.nixosSystem {
+  flake.nixosConfigurations.host = inputs.nixos.lib.nixosSystem {
     inherit system;
     modules = host settings ++ [
       inputs.disko.nixosModules.disko

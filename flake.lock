@@ -207,6 +207,22 @@
         "type": "github"
       }
     },
+    "nixos": {
+      "locked": {
+        "lastModified": 1795370043,
+        "narHash": "sha256-s/0jq8usZtLVOolYBwmyUmd3JsfAu7w3FU+a0dgMqSY=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "0dc498bfe49baeb18b0f9891e800b53bb2603193",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-26.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1795187554,
@@ -227,6 +243,7 @@
       "inputs": {
         "disko": "disko",
         "flake-parts": "flake-parts",
+        "nixos": "nixos",
         "nixpkgs": "nixpkgs",
         "tabkit": "tabkit"
       }
@@ -288,7 +305,7 @@
         "microvm": "microvm",
         "niks3": "niks3",
         "nixos-stable": [
-          "nixpkgs"
+          "nixos"
         ],
         "nixpkgs": [
           "nixpkgs"

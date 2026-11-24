@@ -4,6 +4,7 @@
   settings,
   app,
   nodejs,
+  postgresql,
   modulesPath,
   ...
 }:
@@ -87,7 +88,7 @@ in
         memory = 1024;
         dataSize = 20480;
         secrets."app-password" = "/var/lib/secrets/app-password";
-        config = import ./guests/db.nix { inherit net; };
+        config = import ./guests/db.nix { inherit net postgresql; };
       };
     };
     flows = [
