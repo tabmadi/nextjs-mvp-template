@@ -18,6 +18,8 @@ let
       [
         inputs.tabkit.nixosModules.server
         inputs.tabkit.nixosModules.microvm-host
+        inputs.tabkit.nixosModules.egress
+        ./egress.nix
         ./host.nix
         {
           _module.args = {
